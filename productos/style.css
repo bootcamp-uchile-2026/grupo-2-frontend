@@ -4,26 +4,35 @@ body {
     border: 1px solid #dceadf;
 }
 
-/*contenedor categorias*/ 
-.contenedor-categorias{
+.encabezado {
+    background-color: #aaeeaa;
+    display: flex;
+    padding: 15px;
+    align-items: center;
+}
+.logo {
+    padding-left: 25px;
+}
+.categorias {
+    position: relative;
+}
 
-} 
 
-/* Botón principal */
-#boton-categorias {
+/* Botón categorias */
+#boton-categorias , #boton-nosotros {
     border: none;
     outline: none;
     padding: 10px 18px;            
     background-color: #356234;
     color: #ffffff;                 
     cursor: pointer;                
-    border-radius: 4px;             
+    border-radius: 5px;             
     font-weight: bold;             
     transition: background-color 0.3s; 
     margin-left: 15px;
 }
 
-#boton-categorias:hover {
+#boton-categorias, #boton-nosotros:hover {
     background-color: #356234; 
     color:#ffffff; 
 }
@@ -44,6 +53,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    position: absolute;
+    min-width: 180px;
+    z-index: 1000;
 }
 
 /*  Cajas individuales */
@@ -64,7 +76,7 @@ body {
 
 /* Hover de cada caja individual */
 #menu-categorias .menu:hover {
-    background-color: #8edd8e; 
+    background-color: #aaeeaa; 
     color: #111111;
 }
 

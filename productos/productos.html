@@ -8,19 +8,14 @@
     <script src="script.js" defer></script> 
 </head>
 <body>
-    <header class="encabezado"> 
-        <div class="logo"> 
-            <img src="https://placehold.co/150x150" alt="Logo">
-        </div> 
-    </header>
-<main> 
-<!--Zona categorias productos-->
-<section id="categorias" class="productos-categorias"> 
-    <div class="contenedor-categorias">
-    <!-- Botón activador -->
-        <button type="button" id="boton-categorias" class="boton-menu">
-        Categorías
-        </button>
+    <header> 
+    <nav class="encabezado"> 
+            <div class="logo"> 
+            <img src="https://placehold.co/100x100" alt="Logo">
+            </div>
+    <!-- Botones-->
+            <div class="categorias">
+        <button type="button" id="boton-categorias" class="boton-menu"> Categorías</button>
     <!-- Submenú oculto -->
         <ul id="menu-categorias" class="menu-oculto">
             <li><a href="#mercado" class="menu">Mercado</a></li>
@@ -32,8 +27,13 @@
             <li><a href="#mascotas" class="menu">Mascotas</a></li>
             <li><a href="#artesanias" class="menu">Artesanías</a></li>
         </ul>
-    </div>
-</section>
+            </div>
+            <div>        
+        <button type="button" id="boton-nosotros"> Nosotros </button>
+            </div> 
+        </nav>
+    </header>
+<main> 
 <!--Categoria 1: Mercado-->
     <section id="mercado" class="categoria-grupo"> 
                 <h3> Mercado </h3>
