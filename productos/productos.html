@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos</title>
+    <script src="script.js" defer></script> 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,34 +14,40 @@
         </div> 
     </header>
 <main> 
-        <!-- Navegación entre categorías-->
-     <nav class="navegacion-principal ">
-        <ul> 
-            <li> <a href="#mercado">Mercado</a> </li>
-            <li> <a href="#cuidado-personal">Cuidado Personal</a> </li>
-            <li> <a href="#huerto-en-casa">Huerto en casa</a> </li>
-            <li> <a href="#cuidado-del-hogar">Cuidado del hogar</a> </li>
-            <li> <a href="#bienestar">Bienestar</a> </li>
-        </ul>
-     </nav>
 <!--Zona categorias productos-->
-    <section id="categorias"> 
-        <h2 class="titulo-categorias"> Categorias </h2>
-        <section id="mercado" class="categoria-grupo"> 
-
-        <!--Categoria 1: Mercado-->
+<section id="categorias"> 
+    <h2 class="titulo-categorias"> Categorias </h2>
+    <div class="desplegable-categorias">
+    <!-- Botón activador -->
+        <button type="button" id="boton-categorias" class="btn-dropdown">
+        Categorías
+        </button>
+    <!-- Submenú oculto por defecto -->
+        <ul class="lista-categorias">
+            <li><a href="#mercado">Mercado</a></li>
+            <li><a href="#cuidado-personal">Cuidado Personal</a></li>
+            <li><a href="#huerto-en-casa">Huerto en Casa</a></li>
+            <li><a href="#moda-natural">Moda Natural</a></li>
+            <li><a href="#cuidado-del-hogar">Cuidado del Hogar</a></li>
+            <li><a href="#bienestar">Bienestar</a></li>
+            <li><a href="#mascotas">Mascotas</a></li>
+            <li><a href="#artesanias">Artesanías</a></li>
+        </ul>
+    </div>
+<!--Categoria 1: Mercado-->
+    <section id="mercado" class="categoria-grupo"> 
                 <h3> Mercado </h3>
                     <div class="grid-productos">
                         <article id="producto-1" class="tarjeta-producto"> 
                             <h4> Producto 1 </h4>
                             <img src="https://placehold.co/400x200" alt="Imagen del producto"> 
                             <p> Descripción del producto 1 </p>
-                             <p class="vendedor">Vendedor</p>
-                             <button type="button"> Agregar al carrito </button>
+                            <p class="vendedor">Vendedor</p>
+                            <button type="button"> Agregar al carrito </button>
                         </article>
                     </div>
         </section>
-    <!--Categoria 2: Cuidado Personal-->
+<!--Categoria 2: Cuidado Personal-->
         <section id="cuidado-personal" class="categoria-grupo"> 
                 <h3> Cuidado Personal </h3>
                     <div class="grid-productos">
@@ -53,7 +60,7 @@
                         </article>
                     </div>
         </section>
-    <!--Categoria 3: Huerto en casa-->
+<!--Categoria 3: Huerto en casa-->
         <section id="huerto-en-casa" class="categoria-grupo"> 
                 <h3> Huerto en casa </h3>
                     <div class="grid-productos">
@@ -66,7 +73,7 @@
                         </article>
                     </div>
         </section>
-    <!--Categoria 4: Cuidado del hogar-->
+<!--Categoria 4: Cuidado del hogar-->
         <section id="cuidado-del-hogar" class="categoria-grupo"> 
                 <h3> Cuidado del hogar </h3>
                     <div class="grid-productos">
@@ -79,7 +86,7 @@
                         </article>
                     </div>
         </section>
-    <!--Categoria 5: Bienestar-->
+<!--Categoria 5: Bienestar-->
         <section id="bienestar" class="categoria-grupo"> 
                 <h3> Bienestar </h3>
                     <div class="grid-productos">
@@ -92,7 +99,7 @@
                         </article>
                     </div>
         </section>
-    <!--Categoria 6: Moda natural-->
+<!--Categoria 6: Moda natural-->
         <section id="moda-natural" class="categoria-grupo"> 
                 <h3> Moda natural </h3>
                     <div class="grid-productos">
@@ -106,7 +113,7 @@
                     </div>
         </section>
 
-    <!--Categoria 7: Mascotas-->
+<!--Categoria 7: Mascotas-->
         <section id="mascotas" class="categoria-grupo"> 
                 <h3> Mascotas </h3>
                     <div class="grid-productos">
@@ -118,8 +125,8 @@
                             <button type="button"> Agregar al carrito </button>
                         </article>
                     </div>
-         </section>
-    <!--Categoria 8: Artesanías-->
+        </section>
+<!--Categoria 8: Artesanías-->
         <section id="artesanias" class="categoria-grupo"> 
                 <h3> Artesanías </h3>
                     <div class="grid-productos">
@@ -179,7 +186,7 @@
                         <a href = " " target="_blank" rel="noopener noreferrer">Consultar otros productos del proveedor</a>
                         <button type="button"> Agregar al carrito </button>
                 </article>
-             </div>
+            </div>
     </section>
     
 <!--Zona ofertas-->
