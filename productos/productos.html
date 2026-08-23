@@ -4,36 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos</title>
-    <script src="script.js" defer></script> 
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script> 
 </head>
 <body>
     <header class="encabezado"> 
         <div class="logo"> 
-            <h1> Productos </h1>
+            <img src="https://placehold.co/150x150" alt="Logo">
         </div> 
     </header>
 <main> 
 <!--Zona categorias productos-->
-<section id="categorias"> 
-    <h2 class="titulo-categorias"> Categorias </h2>
-    <div class="desplegable-categorias">
+<section id="categorias" class="productos-categorias"> 
+    <div class="contenedor-categorias">
     <!-- Botón activador -->
-        <button type="button" id="boton-categorias" class="btn-dropdown">
+        <button type="button" id="boton-categorias" class="boton-menu">
         Categorías
         </button>
-    <!-- Submenú oculto por defecto -->
-        <ul class="lista-categorias">
-            <li><a href="#mercado">Mercado</a></li>
-            <li><a href="#cuidado-personal">Cuidado Personal</a></li>
-            <li><a href="#huerto-en-casa">Huerto en Casa</a></li>
-            <li><a href="#moda-natural">Moda Natural</a></li>
-            <li><a href="#cuidado-del-hogar">Cuidado del Hogar</a></li>
-            <li><a href="#bienestar">Bienestar</a></li>
-            <li><a href="#mascotas">Mascotas</a></li>
-            <li><a href="#artesanias">Artesanías</a></li>
+    <!-- Submenú oculto -->
+        <ul id="menu-categorias" class="menu-oculto">
+            <li><a href="#mercado" class="menu">Mercado</a></li>
+            <li><a href="#cuidado-personal" class="menu">Cuidado Personal</a></li>
+            <li><a href="#huerto-en-casa" class="menu">Huerto en Casa</a></li>
+            <li><a href="#moda-natural" class="menu">Moda Natural</a></li>
+            <li><a href="#cuidado-del-hogar" class="menu">Cuidado del Hogar</a></li>
+            <li><a href="#bienestar" class="menu">Bienestar</a></li>
+            <li><a href="#mascotas" class="menu">Mascotas</a></li>
+            <li><a href="#artesanias" class="menu">Artesanías</a></li>
         </ul>
     </div>
+</section>
 <!--Categoria 1: Mercado-->
     <section id="mercado" class="categoria-grupo"> 
                 <h3> Mercado </h3>
