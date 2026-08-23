@@ -4,6 +4,11 @@ body {
     border: 1px solid #dceadf;
 }
 
+/*contenedor categorias*/ 
+.contenedor-categorias{
+
+} 
+
 /* Botón principal */
 #boton-categorias {
     border: none;
@@ -19,7 +24,7 @@ body {
 }
 
 #boton-categorias:hover {
-    background-color: #2b502a; 
+    background-color: #356234; 
     color:#ffffff; 
 }
 
@@ -46,9 +51,15 @@ body {
     display: block;
     padding: 12px 16px;
     background-color: #356234;
+    color:#111111;
     text-decoration: none; 
     border-radius: 6px;
     transition: background-color 0.3s ease; 
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 /* Hover de cada caja individual */
