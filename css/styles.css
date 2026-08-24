@@ -1,0 +1,131 @@
+:root {
+  --verde: #245c3d;
+  --verde-claro: #e8f1eb;
+  --texto: #222;
+  --gris: #666;
+  --borde: #d7ded9;
+  --fondo: #f7f8f7;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.site-header {
+  background: var(--verde);
+  color: white;
+  padding: 20px 0;
+}
+
+.brand {
+  display: inline-block;
+  color: white;
+  font-size: 30px;
+  font-weight: 700;
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+
+.main-nav, .footer-nav, .subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.main-nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+main { padding: 36px 0 52px; }
+
+.page-title { margin-bottom: 4px; }
+.page-intro { color: var(--gris); margin-top: 0; }
+
+.subnav {
+  background: var(--verde-claro);
+  padding: 14px;
+  border-radius: 10px;
+  margin: 22px 0 28px;
+}
+
+.subnav a, .footer-nav a {
+  color: var(--verde);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.section-card {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 22px 0;
+}
+
+.subsection {
+  background: #fafcfb;
+  border-left: 4px solid var(--verde);
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--verde);
+  color: white;
+  text-decoration: none;
+  border-radius: 7px;
+  padding: 10px 14px;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+}
+
+input, select, textarea, button {
+  font: inherit;
+  padding: 10px;
+}
+
+.site-footer {
+  background: #e5ece7;
+  border-top: 1px solid var(--borde);
+  padding: 26px 0;
+}
+
+.site-footer h2 { margin-top: 0; }
+
+@media (max-width: 720px) {
+  .main-nav, .footer-nav, .subnav {
+    flex-direction: column;
+  }
+}
