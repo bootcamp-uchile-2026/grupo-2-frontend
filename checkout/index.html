@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Resumen de compra | Buen Origen</title>
-        <link rel="stylesheet" href="../css/redesign.css">
+        <link rel="stylesheet" href="../css/styles.css">
         <script src="../js/main.js" defer></script>
     </head>
 <body>
@@ -21,7 +21,7 @@
                 </nav><div class="header-actions">
                     <button class="icon-button">⌕</button>
                     <button class="icon-button">♥</button>
-                    <button class="icon-button">●</button>
+                    <button class="icon-button user-trigger" aria-label="Mi cuenta">●</button>
                     <button class="icon-button cart-trigger">🛒<span class="cart-badge">0</span>
                     </button></div>
         </header>
@@ -49,14 +49,46 @@
                 <form class="form-grid" id="checkout-form">
                     <select class="wide" required>
                         <option value="">Comuna*</option>
-                        <option>Santiago</option>
-                        <option>Providencia</option>
+                        <option>Cerrillos</option>
+                        <option>Cerro Navia</option>
+                        <option>Conchalí</option>
+                        <option>El Bosque</option>
+                        <option>Estación Central</option>
+                        <option>Huechuraba</option>
+                        <option>Independencia</option>
+                        <option>La Cisterna</option>
+                        <option>La Florida</option>
+                        <option>La Granja</option>
+                        <option>La Pintana</option>
+                        <option>La Reina</option>
+                        <option>Las Condes</option>
+                        <option>Lo Barnechea</option>
+                        <option>Lo Espejo</option>
+                        <option>Lo Prado</option>
+                        <option>Macul</option>
+                        <option>Maipú</option>
                         <option>Ñuñoa</option>
+                        <option>Pedro Aguirre Cerda</option>
+                        <option>Peñalolén</option>
+                        <option>Providencia</option>
+                        <option>Pudahuel</option>
+                        <option>Puente Alto</option>
+                        <option>Quilicura</option>
+                        <option>Quinta Normal</option>
+                        <option>Recoleta</option>
+                        <option>Renca</option>
+                        <option>San Bernardo</option>
+                        <option>San Joaquín</option>
+                        <option>San Miguel</option>
+                        <option>San Ramón</option>
+                        <option>Santiago</option>
+                        <option>Vitacura</option>
                     </select>
                 <input class="wide" required placeholder="Calle*">
-                <input required placeholder="Número*">
-                <input placeholder="Depto/ofic/casa">
-                <input placeholder="Código Postal">
+                <input id="street-number" required placeholder="Número*">
+                <label class="no-number"><input id="no-street-number" type="checkbox"> Calle sin número</label>
+                <input placeholder="Depto/ofic/casa (opcional)">
+                <input placeholder="Código Postal (opcional)">
                 <textarea class="wide" rows="4" placeholder="Indicaciones para la entrega (opcional)"></textarea>
             </form>
         </section>

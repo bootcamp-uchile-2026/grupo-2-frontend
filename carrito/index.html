@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Tu carrito | Buen Origen</title>
-        <link rel="stylesheet" href="../css/redesign.css">
+        <link rel="stylesheet" href="../css/styles.css">
         <script src="../js/main.js" defer></script>
     </head>
     <body>
@@ -22,7 +22,7 @@
             <div class="header-actions">
                 <button class="icon-button">⌕</button>
                 <button class="icon-button">♥</button>
-                <button class="icon-button user-trigger">●</button>
+                <button class="icon-button user-trigger" aria-label="Mi cuenta">●</button>
                 <button class="icon-button cart-trigger">🛒<span class="cart-badge">0</span>
                 </button>
             </div>
@@ -77,6 +77,25 @@
             <div class="copyright">© 2026 Buen Origen — Todos los derechos reservados</div>
         </footer></div>
         <div class="overlay"></div>
+        <aside class="auth-panel" aria-label="Acceso para continuar con la compra">
+            <button class="auth-close" type="button" aria-label="Cerrar">×</button>
+            <h2>¿Tienes una cuenta?</h2>
+            <p class="auth-intro">Ingresa aquí</p>
+            <form id="auth-form">
+                <label>Email:
+                    <input type="email" required autocomplete="email">
+                </label>
+                <label>Contraseña:
+                    <input type="password" required autocomplete="current-password">
+                </label>
+                <button class="btn auth-submit" type="submit">Ingresar y continuar</button>
+            </form>
+            <div class="auth-divider"><span>o</span></div>
+            <div class="auth-actions">
+                <button class="btn create-account" type="button">Crea una cuenta</button>
+                <button class="btn secondary guest-checkout" type="button">Continuar como invitado</button>
+            </div>
+        </aside>
         <div class="toast" role="status"></div>
     </body>
 </html>
