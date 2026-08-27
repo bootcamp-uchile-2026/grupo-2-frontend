@@ -1,5 +1,24 @@
+/*
+ * BUEN ORIGEN — COMPORTAMIENTO PRINCIPAL
+ *
+ * Este archivo se carga en todas las páginas. Cada bloque comprueba primero si
+ * existe el elemento correspondiente, por lo que sólo se ejecuta la lógica de
+ * la vista que está abierta.
+ *
+ * Organización general:
+ *  1. Datos simulados del catálogo
+ *  2. Utilidades y persistencia del carrito
+ *  3. Página de inicio y carruseles
+ *  4. Catálogo, filtros y ordenamiento
+ *  5. Ficha y edición de producto
+ *  6. Componentes compartidos y carrito lateral
+ *  7. Página de carrito y acceso/invitado
+ *  8. Checkout y confirmación
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Datos del catálogo
+  // 1. DATOS SIMULADOS — Compartidos por catálogo y recomendaciones
+  // Centraliza la información usada para construir las tarjetas de productos.
   const products = [
     {
       name: "Polera Aurora",
@@ -120,7 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   ];
 
-  // Utilidades compartidas: precios, UUID, carrito y notificaciones
+  // 2. UTILIDADES COMPARTIDAS — Todas las páginas
+  // Formatea precios, genera UUID, normaliza/persiste el carrito y muestra avisos.
   const money = (n) => `$${Number(n).toLocaleString("es-CL")}`;
 
   const createShipmentId = () => globalThis.crypto?.randomUUID?.() || "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
@@ -176,7 +196,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateBadges();
 
-  // Página de inicio: carruseles de ofertas, productos y emprendedores
+  // 3. PÁGINA DE INICIO — /index.html
+  // Controla los carruseles de ofertas, productos populares y emprendedores.
+
+  // Carrusel automático de ofertas: flechas, puntos, teclado, pausa y gestos.
   const carousel = document.querySelector(".offer-carousel");
   if (carousel) {
     const track = carousel.querySelector(".offer-track"),
@@ -244,6 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     start();
   }
 
+  // Carrusel paginado de productos populares, adaptado al ancho de pantalla.
   const popularCarousel = document.querySelector(".popular-carousel");
   if (popularCarousel) {
     const track = popularCarousel.querySelector(".popular-track"),
@@ -287,6 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
     show(0);
   }
 
+  // Carrusel paginado de emprendedores, adaptado al ancho de pantalla.
   const entrepreneurCarousel = document.querySelector(".entrepreneur-carousel");
   if (entrepreneurCarousel) {
     const track = entrepreneurCarousel.querySelector(".entrepreneur-track"),
@@ -330,7 +355,8 @@ document.addEventListener("DOMContentLoaded", () => {
     show(0);
   }
 
-  // Página de catálogo: productos, filtros, categorías y ordenamiento
+  // 4. CATÁLOGO — /productos/moda-natural/index.html
+  // Renderiza productos y combina categoría, filtros, ordenamiento y agregado rápido.
   const catalog = document.querySelector("#catalog");
   let category = "poleras";
 
@@ -382,7 +408,8 @@ document.addEventListener("DOMContentLoaded", () => {
     refresh();
   }
 
-  // Productos destacados compartidos por catálogo y ficha de producto
+  // Productos destacados — Catálogo y ficha de producto
+  // Reutiliza los datos principales para generar una selección secundaria.
   const featured = document.querySelector("#featured-products");
   if (featured)
     featured.innerHTML = products
@@ -390,7 +417,9 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((p) => `<a class="product-card" href="${location.pathname.includes("/producto/") ? "../" : ""}producto/index.html?name=${encodeURIComponent(p.name)}&price=${p.price}"><div class="placeholder"></div><h3>${p.name}</h3><p>${money(p.price)}</p></a>`)
       .join("");
 
-  // Ficha de producto: opciones, cantidad y edición desde el carrito
+  // 5. FICHA DE PRODUCTO — /productos/moda-natural/producto/index.html
+  // Lee el producto desde la URL, administra variantes/cantidad y permite agregar
+  // o actualizar una línea que se abrió mediante la acción Editar del carrito.
   const params = new URLSearchParams(location.search);
   if (document.querySelector(".product-info")) {
     const name = params.get("name") || "Polera Aurora",
@@ -441,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".thumb").forEach((t) => (t.onclick = () => document.querySelectorAll(".thumb").forEach((x) => x.classList.toggle("active", x === t))));
   }
 
-  // Ficha de producto: pestañas informativas
+  // Pestañas de materiales, elaboración y valoraciones de la ficha.
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.onclick = () => {
       document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === tab));
@@ -449,7 +478,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  // Componentes compartidos: overlay y carrito lateral
+  // 6. COMPONENTES COMPARTIDOS — Todas las páginas
+  // Administra el overlay, el carrito lateral y la recomendación incorporable.
   const overlay = document.querySelector(".overlay");
 
   const closeLayers = () => {
@@ -490,7 +520,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".cart-trigger").forEach((x) => (x.onclick = openDrawer));
 
-  // Página de carrito
+  // 7. PÁGINA DE CARRITO — /carrito/index.html
+  // Renderiza líneas y subtotal; gestiona cantidad, edición, guardado y eliminación.
   const lines = document.querySelector("#cart-lines");
   if (lines) {
     const render = () => {
@@ -541,6 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     render();
 
+    // Acceso previo al checkout: ingreso simulado, creación o compra como invitado.
     document.querySelector(".checkout-trigger").onclick = () => {
       if (!getCart().length) return toast("Tu carrito está vacío");
       document.querySelector(".auth-panel").classList.add("open");
@@ -569,7 +601,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Página de checkout y confirmación de compra
+  // 8. CHECKOUT Y CONFIRMACIÓN — /checkout/index.html
+  // Completa el resumen, controla "calle sin número" y finaliza la simulación de
+  // compra mostrando un UUID que puede copiarse para seguimiento.
   if (document.querySelector("#checkout-subtotal")) {
     const cart = getCart(),
       total = cart.reduce((n, p) => n + p.price * p.qty, 0);
