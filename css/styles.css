@@ -1,5 +1,26 @@
+/*
+ * BUEN ORIGEN — HOJA DE ESTILOS PRINCIPAL
+ *
+ * Organización general:
+ *  1. Variables y ajustes visuales específicos
+ *  2. Base y componentes compartidos
+ *  3. Página de inicio
+ *  4. Footer compartido
+ *  5. Catálogo de productos
+ *  6. Ficha de producto
+ *  7. Carrito lateral y notificaciones
+ *  8. Pasos del proceso de compra
+ *  9. Página de carrito
+ * 10. Checkout y confirmación
+ * 11. Adaptación para tablet y móvil
+ *
+ * Se conserva una única hoja para reutilizar los componentes comunes. Los
+ * selectores propios de cada vista están identificados con su ruta HTML.
+ */
+
 /* ==========================================================
-   VARIABLES GLOBALES — Todas las páginas
+   1. VARIABLES GLOBALES — Todas las páginas
+   Paleta, ancho máximo, sombras y colores reutilizados.
    ========================================================== */
 :root {
   --ink: #263943;
@@ -15,9 +36,13 @@
   --shadow: 0 14px 40px rgba(35, 57, 64, 0.1);
 }
 /* ==========================================================
-   INICIO — Carruseles y secciones destacadas
-   Archivo: /index.html
+   1.1 AJUSTES VISUALES ESPECÍFICOS
+   Reglas añadidas sobre los componentes principales. Se mantienen aquí para
+   conservar la cascada original del prototipo.
    ========================================================== */
+
+/* Página de inicio: separación de las secciones bajo las ofertas.
+   Archivo: /index.html */
 .home-page .offer + .section {
   padding-top: 52px;
   padding-bottom: 52px;
@@ -32,6 +57,8 @@
     padding: 42px 20px;
   }
 }
+/* Página de inicio: carrusel principal de ofertas, controles y paginación.
+   Archivo: /index.html */
 .offer-carousel {
   height: 250px;
   position: relative;
@@ -116,6 +143,8 @@
 .carousel-dots button.active {
   background: var(--green);
 }
+/* Página de inicio: iconos de compromisos, perfiles y reseñas.
+   Archivo: /index.html */
 .commitment-icon {
   filter: grayscale(1);
   line-height: 1;
@@ -167,6 +196,8 @@
 .review-row .stars {
   font-size: 18px;
 }
+/* Página de carrito: acciones secundarias y distribución de cada producto.
+   Archivo: /carrito/index.html */
 .cart-line {
   grid-template-columns: 170px minmax(0, 1fr) auto auto auto;
 }
@@ -186,6 +217,8 @@
   align-self: start;
   margin-top: 2px;
 }
+/* Página de inicio: carrusel de emprendedores y adaptación responsive.
+   Archivo: /index.html */
 .entrepreneur-carousel {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) 34px;
@@ -246,6 +279,8 @@
     height: 104px;
   }
 }
+/* Página de inicio: carrusel de productos populares y llamada a la acción.
+   Archivo: /index.html */
 .popular-section {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 270px;
@@ -325,8 +360,8 @@
   }
 }
 /* ==========================================================
-   BASE Y COMPONENTES COMPARTIDOS — Todas las páginas
-   Header, navegación, botones, contenedores y utilidades
+   2. BASE Y COMPONENTES COMPARTIDOS — Todas las páginas
+   Normalización, tipografía y contenedor principal.
    ========================================================== */
 * {
   box-sizing: border-box;
@@ -361,6 +396,7 @@ a {
   box-shadow: var(--shadow);
 }
 
+/* Header compartido: logo, navegación desplegable e iconos de acciones. */
 .site-header {
   height: 72px;
   padding: 0 46px;
@@ -463,6 +499,7 @@ a {
   padding: 2px 5px;
   text-align: center;
 }
+/* Navegación contextual, secciones, botones y placeholders reutilizables. */
 .breadcrumbs {
   padding: 14px 60px;
   font-size: 12px;
@@ -514,8 +551,9 @@ a {
   font-size: 48px;
 }
 /* ==========================================================
-   INICIO — Hero, ofertas, compromisos, emprendedores y blog
+   3. PÁGINA DE INICIO
    Archivo: /index.html
+   Hero, ofertas, productos, compromisos, huella verde, emprendedores y blog.
    ========================================================== */
 .hero {
   min-height: 430px;
@@ -696,7 +734,8 @@ a {
   text-underline-offset: 4px;
 }
 /* ==========================================================
-   FOOTER COMPARTIDO — Todas las páginas
+   4. FOOTER COMPARTIDO — Todas las páginas
+   Marca, navegación secundaria, enlaces legales y redes sociales.
    ========================================================== */
 .site-footer {
   margin-top: auto;
@@ -763,8 +802,9 @@ a {
   font-style: italic;
 }
 /* ==========================================================
-   CATÁLOGO DE PRODUCTOS
+   5. CATÁLOGO DE PRODUCTOS
    Archivo: /productos/moda-natural/index.html
+   Cabecera de categoría, filtros, orden, grilla, destacados y reseñas.
    ========================================================== */
 .category-title {
   text-align: center;
@@ -954,8 +994,9 @@ a {
   font-size: 12px;
 }
 /* ==========================================================
-   FICHA DE PRODUCTO
+   6. FICHA DE PRODUCTO
    Archivo: /productos/moda-natural/producto/index.html
+   Galería, variantes, cantidad, huella verde, pestañas y relacionados.
    ========================================================== */
 .product-main {
   display: grid;
@@ -1083,7 +1124,8 @@ a {
   border-top: 2px solid var(--line);
 }
 /* ==========================================================
-   CARRITO LATERAL, OVERLAY Y NOTIFICACIONES — Compartidos
+   7. CARRITO LATERAL, OVERLAY Y NOTIFICACIONES — Compartidos
+   Panel invocado desde el header, fondo modal y mensajes temporales.
    ========================================================== */
 .cart-drawer {
   position: fixed;
@@ -1177,8 +1219,9 @@ a {
   transform: translate(-50%, 0);
 }
 /* ==========================================================
-   PASOS DE COMPRA — Carrito y checkout
+   8. PASOS DEL PROCESO DE COMPRA
    Archivos: /carrito/index.html y /checkout/index.html
+   Indicador común de carrito, resumen y confirmación.
    ========================================================== */
 .steps {
   display: flex;
@@ -1224,8 +1267,9 @@ a {
   margin-top: 7px;
 }
 /* ==========================================================
-   CARRITO
+   9. PÁGINA DE CARRITO
    Archivo: /carrito/index.html
+   Productos, cantidades, subtotal, huella verde y panel de acceso/invitado.
    ========================================================== */
 .cart-page,
 .checkout-page {
@@ -1338,8 +1382,9 @@ a {
   cursor: pointer;
 }
 /* ==========================================================
-   CHECKOUT Y CONFIRMACIÓN
+   10. CHECKOUT Y CONFIRMACIÓN
    Archivo: /checkout/index.html
+   Formulario de despacho, pago, resumen y código de seguimiento.
    ========================================================== */
 .checkout-grid {
   display: grid;
@@ -1450,7 +1495,9 @@ a {
   color: var(--white);
 }
 /* ==========================================================
-   RESPONSIVE — Ajustes compartidos para tablet y móvil
+   11. RESPONSIVE — Todas las páginas
+   Reorganiza navegación, grillas, formularios, carritos y footer para tablet
+   y móvil sin duplicar la definición principal de cada componente.
    ========================================================== */
 @media (max-width: 800px) {
   body {
