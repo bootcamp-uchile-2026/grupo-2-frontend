@@ -1,5 +1,5 @@
 import {useState} from "react";
-import { SubCategorias } from "../Data/NavegaciónData";
+import { SubCategorias } from "./NavegaciónData";
 import "./Header.css";
 
 export function Header () {
