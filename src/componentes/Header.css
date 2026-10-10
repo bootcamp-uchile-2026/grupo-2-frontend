@@ -1,0 +1,157 @@
+/* ==========================================================
+   1. VARIABLES GLOBALES — Todas las páginas
+   Paleta, ancho máximo, sombras y colores reutilizados.
+   ========================================================== */
+   :root {
+  --ink: #263943;
+  --green: #547c72;
+  --green-dark: #3f675e;
+  --mint: #d7ebe6;
+  --soft: #edf3f1;
+  --line: #c9d5d7;
+  --placeholder: #dfe5ec;
+  --placeholder-ink: #9daebb;
+  --white: #fff;
+  --max: 1180px;
+  --shadow: 0 14px 40px rgba(35, 57, 64, 0.1);
+}
+
+/* ==========================================================
+   BASE Y COMPONENTES COMPARTIDOS — Todas las páginas
+   Normalización, tipografía y contenedor principal.
+   ========================================================== */
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: #f4f6f5;
+  color: var(--ink);
+  font-family: Inter, Arial, sans-serif;
+  line-height: 1.45;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+a {
+  color: inherit;
+}
+.site {
+  width: min(100%, var(--max));
+  margin: auto;
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+}
+
+.site-header {
+  height: 72px;
+  padding: 0 46px;
+  background: var(--green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  z-index: 20;
+}
+.logo {
+  width: 46px;
+  height: 42px;
+  background: #8ba9a2(209, 237, 209);
+  color: var(--green);
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 900;
+}
+.main-nav {
+  display: flex;
+  gap: 34px;
+  align-items: center;
+}
+.main-nav a {
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.nav-group {
+  height: 72px;
+  display: flex;
+  align-items: center;
+}
+.dropdown {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  padding: 12px 105px;
+  background: var(--green);
+  display: grid;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: 0.2s;
+}
+.dropdown a {
+  padding: 6px 0;
+}
+.nav-group:hover .dropdown,
+.nav-group:focus-within .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 19px;
+}
+
+.icon-button {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-size: 21px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+}
+.user-trigger {
+  width: 31px;
+  height: 31px;
+  font-size: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 21c.7-4.3 3.2-7 7.5-7s6.8 2.7 7.5 7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 23px 23px;
+}
+.cart-badge {
+    position: absolute;
+    top: -3px;
+    right: -7px;
+    background: var(--mint);
+    color: var(--ink);
+    font-size: 10px;
+    border-radius: 12px;
+    min-width: 17px;
+    padding: 2px 5px;
+    text-align: center;
+}
