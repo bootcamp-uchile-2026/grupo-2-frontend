@@ -1,0 +1,225 @@
+.site-navigation {
+  position: relative;
+  z-index: 20;
+}
+.announcement-bar {
+  min-height: 30px;
+  padding: 7px 42px;
+  background: var(--green-dark);
+  color: white;
+  text-align: center;
+  position: relative;
+}
+.announcement-bar p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.announcement-bar button {
+  position: absolute;
+  top: 3px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  color: #e5e5e5;
+  font-size: 23px;
+  cursor: pointer;
+}
+.site-navigation .site-header {
+  min-height: 88px;
+  height: auto;
+  padding: 18px 30px;
+  background: var(--green);
+  color: var(--white);
+  gap: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+}
+.site-navigation .logo {
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: transparent;
+  flex-shrink: 0;
+}
+.site-navigation .logo img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: none;
+}
+.logo-wordmark {
+  color: var(--white);
+  font:
+    bold 22px/0.85 Georgia,
+    'Times New Roman',
+    serif;
+}
+.site-navigation .main-nav {
+  gap: 20px;
+}
+.site-navigation .main-nav a,
+.site-navigation .nav-trigger {
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+}
+.site-navigation .nav-group {
+  height: auto;
+}
+.site-navigation .dropdown {
+  top: 100%;
+  padding: 18px 140px;
+  background: var(--green);
+  color: var(--white);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow);
+}
+.site-navigation .header-actions {
+  gap: 12px;
+}
+.site-navigation .icon-button {
+  color: var(--white);
+  background: transparent;
+  font-size: inherit;
+  width: 28px;
+  height: 28px;
+  text-decoration: none;
+  border: 0;
+  position: relative;
+}
+.site-navigation .icon-button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.site-navigation .icon-button svg,
+.header-points svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.account-greeting-button {
+  border: 0;
+  background: transparent;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--white);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.site-navigation .header-points {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  text-decoration: none;
+}
+.site-navigation .cart-badge {
+  top: -7px;
+  right: -8px;
+  background: var(--mint);
+  color: var(--green-dark);
+  font-size: 9px;
+}
+.welcome-toast {
+  top: 146px;
+  bottom: auto;
+  width: min(620px, calc(100% - 40px));
+  max-width: none;
+  padding: 28px 42px;
+  border-radius: 12px;
+  background: #494949;
+  color: white;
+  text-align: center;
+  box-shadow: 0 3px 8px #0003;
+}
+.welcome-toast button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  border: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #828282;
+  color: #333;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+@media (max-width: 1100px) {
+  .site-navigation .site-header {
+    gap: 16px;
+    padding-inline: 20px;
+  }
+  .site-navigation .main-nav {
+    gap: 14px;
+  }
+  .site-navigation .header-actions {
+    gap: 8px;
+  }
+  .site-navigation .header-points {
+    font-size: 10px;
+  }
+}
+@media (max-width: 900px) {
+  .site-navigation .main-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .site-navigation .header-actions {
+    margin-left: auto;
+  }
+  .site-navigation .header-points {
+    display: flex;
+  }
+  .site-navigation .dropdown {
+    padding: 16px 24px;
+  }
+  .welcome-toast {
+    top: 180px;
+  }
+}
+@media (max-width: 480px) {
+  .site-navigation .site-header {
+    padding: 12px 16px;
+    gap: 14px;
+  }
+  .site-navigation .main-nav {
+    gap: 12px 16px;
+  }
+  .site-navigation .main-nav a,
+  .site-navigation .nav-trigger {
+    font-size: 11px;
+  }
+  .site-navigation .header-points {
+    max-width: 130px;
+    font-size: 9px;
+  }
+  .account-greeting-button {
+    font-size: 11px;
+  }
+  .site-navigation .logo img {
+    width: 32px;
+    height: 32px;
+  }
+  .logo-wordmark {
+    font-size: 16px;
+  }
+  .site-navigation .header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 230px;
+  }
+  .welcome-toast {
+    padding: 24px 32px;
+    font-size: 13px;
+  }
+}
