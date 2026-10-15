@@ -136,7 +136,7 @@ test('Carrito y checkout vacíos ofrecen volver al catálogo', () => {
   for (const Component of [Cart, Checkout]) {
     const html = render(Component, '/checkout', '*', { openAuth: noop });
     assert.match(html, /Tu carrito está vacío/);
-    assert.match(html, /Explorar productos/);
+    assert.match(html, /Explorar productos|Seguir comprando/);
     assert.doesNotMatch(html, /Confirmar y pagar/);
   }
 });
@@ -325,4 +325,99 @@ test('Catálogo y ficha muestran la misma fotografía de un producto', () => {
   );
   assert.ok(catalogue.includes(`src="${source}"`));
   assert.ok(detail.includes(`src="${source}"`));
+});
+
+const { shippingSchema } = await server.ssrLoadModule(
+  '/src/pages/shippingSchema.ts',
+);
+const validShipping = {
+  firstName: ' Ana ',
+  lastName: 'Pérez',
+  email: 'ana@example.com',
+  rut: '12.345.678-5',
+  phone: '+56 9 1234 5678',
+  commune: 'Santiago',
+  street: 'Los Aromos',
+  number: '120',
+  noNumber: false,
+  unit: '',
+  postalCode: '',
+  instructions: '',
+};
+
+test('Zod valida contacto y dirección y limpia espacios', () => {
+  const result = shippingSchema.safeParse(validShipping);
+  assert.equal(result.success, true);
+  assert.equal(result.data.firstName, 'Ana');
+  for (const [field, value] of Object.entries({
+    firstName: '   ',
+    lastName: '',
+    email: 'correo',
+    rut: '12.345.678-9',
+    phone: '123',
+    commune: '',
+    street: ' ',
+    number: '',
+    postalCode: '123',
+  })) {
+    const invalid = shippingSchema.safeParse({
+      ...validShipping,
+      [field]: value,
+    });
+    assert.equal(invalid.success, false, field);
+    assert.ok(
+      invalid.error.issues.some((issue) => issue.path[0] === field),
+      field,
+    );
+  }
+});
+
+test('Zod permite dirección sin número y código postal opcional', () => {
+  assert.equal(
+    shippingSchema.safeParse({
+      ...validShipping,
+      number: '',
+      noNumber: true,
+      postalCode: '8320000',
+    }).success,
+    true,
+  );
+  assert.equal(
+    shippingSchema.safeParse({
+      ...validShipping,
+      phone: '912345678',
+      rut: '123456785',
+    }).success,
+    true,
+  );
+});
+
+const { Search } = await server.ssrLoadModule('/src/pages/Search.tsx');
+const { Header } = await server.ssrLoadModule(
+  '/src/components/Header/Header.tsx',
+);
+test('El buscador habilitado envía la consulta a resultados', () => {
+  const html = render(Header, '/', '*', { openCart: noop });
+  assert.match(html, /action="\/buscar"/);
+  assert.match(html, /name="q"/);
+  assert.match(html, /role="search"/);
+});
+test('Búsqueda sin resultados presenta ilustración y recomendaciones', () => {
+  const html = render(Search, '/buscar?q=producto-inexistente-xyz');
+  assert.match(html, /No encontramos tu producto/);
+  assert.match(html, /Productos Recomendados/);
+  assert.match(html, /Reseñas de nuestros clientes/);
+  assert.match(html, /empty-illustration/);
+});
+test('La búsqueda ignora tildes y devuelve fichas de productos', () => {
+  const html = render(Search, '/buscar?q=algodon');
+  assert.match(html, /Resultados de búsqueda/);
+  assert.match(html, /shop-card/);
+  assert.doesNotMatch(html, /No encontramos tu producto/);
+});
+test('El carrito vacío presenta ilustración y acción para seguir comprando', () => {
+  const html = render(Cart, '/carrito', '*', { openAuth: noop });
+  assert.match(html, /empty-illustration/);
+  assert.match(html, /Seguir comprando/);
+  assert.doesNotMatch(html, /Guardados para después/);
 });

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import { CartProvider } from './store/CartContext';
 import { AccountProvider } from './store/AccountProvider';
 import { Layout } from './components/Layout';
@@ -7,6 +13,8 @@ import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { Product } from './pages/Product';
 import { Cart } from './pages/Cart';
+import { Search } from './pages/Search';
+import './search.css';
 import { Checkout } from './pages/Checkout';
 import { Login, Recovery } from './pages/Access';
 import { Account } from './pages/Account';
@@ -21,28 +29,24 @@ import '@fontsource/poppins/latin-700.css';
 import './figma-refinements.css';
 
 function LegacyRedirect({ to }: { to: string }) {
-
   const location = useLocation();
 
   return <Navigate replace to={to + location.search + location.hash} />;
 }
 
 function ProductRoute() {
-
   const location = useLocation();
 
   return <Product key={location.search} />;
 }
 
 function CatalogRoute() {
-
   const location = useLocation();
 
   return <Catalog key={location.pathname} />;
 }
 
 export function App() {
-
   const [layer, setLayer] = useState('');
 
   return (
@@ -52,6 +56,7 @@ export function App() {
           <Routes>
             <Route element={<Layout layer={layer} setLayer={setLayer} />}>
               <Route path="/" element={<Home />} />
+              <Route path="/buscar" element={<Search />} />
               <Route path="/productos/:category" element={<CatalogRoute />} />
               <Route
                 path="/productos/:category/producto"

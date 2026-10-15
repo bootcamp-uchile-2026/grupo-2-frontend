@@ -41,6 +41,21 @@ export function Entrepreneurs() {
     null,
   );
 
+  function move(direction: number) {
+
+    const viewport = track.current;
+    const card = viewport?.querySelector<HTMLElement>('.maker-card');
+
+    if (!viewport || !card) return;
+
+    const gap = parseFloat(getComputedStyle(viewport).columnGap) || 0;
+
+    viewport.scrollBy({
+      left: direction * (card.getBoundingClientRect().width + gap),
+      behavior: 'smooth',
+    });
+  }
+
   return (
     <section className="section makers-section" id="emprendedores">
       <h2 className="section-title">Nuestros Emprendedores</h2>
@@ -48,12 +63,7 @@ export function Entrepreneurs() {
         Conoce a las personas detrás de tus productos
       </p>
       <div className="makers-carousel">
-        <button
-          aria-label="Emprendedores anteriores"
-          onClick={() =>
-            track.current?.scrollBy({ left: -336, behavior: 'smooth' })
-          }
-        >
+        <button aria-label="Emprendedores anteriores" onClick={() => move(-1)}>
           <img src="/img/figma/entrepreneurs-imgFrame1507.svg" alt="" />
         </button>
         <div className="makers-track" ref={track}>
@@ -83,12 +93,7 @@ export function Entrepreneurs() {
             </article>
           ))}
         </div>
-        <button
-          aria-label="Emprendedores siguientes"
-          onClick={() =>
-            track.current?.scrollBy({ left: 336, behavior: 'smooth' })
-          }
-        >
+        <button aria-label="Emprendedores siguientes" onClick={() => move(1)}>
           <img
             src="/img/figma/entrepreneurs-imgIconixtoSolidArrowSquareRight1.svg"
             alt=""

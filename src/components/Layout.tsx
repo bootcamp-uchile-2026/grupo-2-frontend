@@ -38,10 +38,7 @@ export function Layout({
   return (
     <>
       <div className="site">
-        <Header
-          openCart={() => setLayer('cart')}
-          openAuth={() => setLayer('auth')}
-        />
+        <Header openCart={() => setLayer('cart')} />
         <Outlet />
         <Footer />
       </div>

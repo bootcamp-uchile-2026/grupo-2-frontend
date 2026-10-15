@@ -9,12 +9,12 @@ import type { Order } from '../store/account';
 import { money, productLabels } from '../data/products';
 import { Steps } from '../components/Steps';
 import { ShippingForm } from './ShippingForm';
+import type { ShippingData } from './shippingSchema';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import './Checkout.css';
 
 function estimatedDelivery() {
-
   const date = new Date();
   let days = 0;
 
@@ -33,7 +33,6 @@ function estimatedDelivery() {
 }
 
 export function Checkout() {
-
   const { cart, setCart, total, notify } = useCart();
   const { user, placeOrder } = useAccount();
   const [noNumber, setNoNumber] = useState(false);
@@ -45,8 +44,7 @@ export function Checkout() {
   const [completed, setCompleted] = useState<Order | null>(null);
   const earnedPoints = Math.floor(total / 100);
 
-  function confirm(event: FormEvent<HTMLFormElement>) {
-
+  function confirm(event: FormEvent<HTMLFormElement>, data: ShippingData) {
     event.preventDefault();
 
     if (!cart.length) {
@@ -79,8 +77,7 @@ export function Checkout() {
       return;
     }
 
-    const data = new FormData(event.currentTarget);
-    const address = `${data.get('street')} ${noNumber ? 's/n' : data.get('number')}${data.get('unit') ? ', ' + data.get('unit') : ''}, ${data.get('commune')}`;
+    const address = `${data.street} ${noNumber ? 's/n' : data.number}${data.unit ? ', ' + data.unit : ''}, ${data.commune}`;
 
     setPending({
       id: crypto.randomUUID(),
@@ -94,14 +91,13 @@ export function Checkout() {
       delivery: estimatedDelivery(),
       status: 'Pedido recibido',
       contact: {
-        name: `${data.get('firstName')} ${data.get('lastName')}`,
-        email: String(data.get('email')),
+        name: `${data.firstName} ${data.lastName}`,
+        email: String(data.email),
       },
     });
   }
 
   function pay() {
-
     if (!pending) return;
 
     if (decline) {

@@ -5,11 +5,10 @@ import { money, productUrl, productLabels } from '../data/products';
 import { readItems, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import { Steps } from '../components/Steps';
-import { EmptyState } from '../components/EmptyState';
+import { EmptyIllustration } from '../components/EmptyIllustration';
 import type { CartItem } from '../store/cart';
 
 export function Cart({ openAuth }: { openAuth: () => void }) {
-
   const { cart, setCart, total, notify, add } = useCart();
   const { user } = useAccount();
   const [saved, setSaved] = useState(() => readItems('eco-saved'));
@@ -17,14 +16,12 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
   const navigate = useNavigate();
 
   function updateSaved(items: CartItem[]) {
-
     localStorage.setItem('eco-saved', JSON.stringify(items));
 
     setSaved(items);
   }
 
   function save(index: number) {
-
     const item = cart[index];
 
     updateSaved([...saved, item]);
@@ -35,7 +32,6 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
   }
 
   function pay() {
-
     if (!cart.length) {
       setError('Tu carrito está vacío. Agrega un producto para continuar.');
 
@@ -62,10 +58,12 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
 
   return (
     <>
-      <div className="breadcrumbs">
-        <Link to="/">Home</Link> › Carrito
-      </div>
-      <Steps active={0} />
+      {cart.length > 0 && (
+        <div className="breadcrumbs">
+          <Link to="/">Home</Link> › Carrito
+        </div>
+      )}
+      {cart.length > 0 && <Steps active={0} />}
       <main className="cart-page">
         {cart.length ? (
           <>
@@ -136,7 +134,6 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     className="remove"
                     aria-label={`Eliminar ${p.name}`}
                     onClick={() => {
-
                       setCart(cart.filter((_, index) => index !== i));
 
                       notify(`${p.name} se eliminó del carrito`);
@@ -169,53 +166,57 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             </div>
           </>
         ) : (
-          <EmptyState
-            title="Tu carrito está vacío"
-            description="Encuentra un producto que te guste y agrégalo para comenzar tu compra."
-          />
+          <section className="ux-empty cart-empty">
+            <EmptyIllustration cart />
+            <h1>Ups...Tu carrito está vacío</h1>
+            <Link className="btn" to="/productos/ropa-y-accesorios">
+              Seguir comprando <span aria-hidden="true">🛒</span>
+            </Link>
+          </section>
         )}
-        <section className="saved-products" id="guardados">
-          <h2>Guardados para después</h2>
-          {saved.length ? (
-            saved.map((item, i) => (
-              <article className="panel saved-item" key={i}>
-                <ProductImage name={item.name} />
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>
-                    {productLabels(item).size}: {item.size} ·{' '}
-                    {productLabels(item).color}: {item.color}
-                  </p>
-                  <strong>{money(item.price)}</strong>
-                </div>
-                <div className="modal-actions">
-                  <button
-                    className="btn"
-                    onClick={() => {
+        {(cart.length > 0 || saved.length > 0) && (
+          <section className="saved-products" id="guardados">
+            <h2>Guardados para después</h2>
+            {saved.length ? (
+              saved.map((item, i) => (
+                <article className="panel saved-item" key={i}>
+                  <ProductImage name={item.name} />
+                  <div>
+                    <h3>{item.name}</h3>
+                    <p>
+                      {productLabels(item).size}: {item.size} ·{' '}
+                      {productLabels(item).color}: {item.color}
+                    </p>
+                    <strong>{money(item.price)}</strong>
+                  </div>
+                  <div className="modal-actions">
+                    <button
+                      className="btn"
+                      onClick={() => {
+                        add(item, item.qty);
 
-                      add(item, item.qty);
-
-                      updateSaved(saved.filter((_, index) => index !== i));
-                    }}
-                  >
-                    Volver al carrito
-                  </button>
-                  <button
-                    className="btn outline"
-                    onClick={() =>
-                      updateSaved(saved.filter((_, index) => index !== i))
-                    }
-                    aria-label={`Eliminar ${item.name} de guardados`}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </article>
-            ))
-          ) : (
-            <p>Los productos que guardes para después aparecerán aquí.</p>
-          )}
-        </section>
+                        updateSaved(saved.filter((_, index) => index !== i));
+                      }}
+                    >
+                      Volver al carrito
+                    </button>
+                    <button
+                      className="btn outline"
+                      onClick={() =>
+                        updateSaved(saved.filter((_, index) => index !== i))
+                      }
+                      aria-label={`Eliminar ${item.name} de guardados`}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p>Los productos que guardes para después aparecerán aquí.</p>
+            )}
+          </section>
+        )}
       </main>
     </>
   );
