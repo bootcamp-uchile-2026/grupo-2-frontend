@@ -1,42 +1,184 @@
-import {useState} from "react";
-import { SubCategorias } from "./NavegaciónData";
-import "./Header.css";
+import { useState } from 'react';
+import { HeaderIcon } from './HeaderIcon';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { categories } from '../../data/categories';
+import { useCart } from '../../store/cart';
+import { useAccount, demoAccountSummary } from '../../store/account';
 
-export function Header () {
-    const [isOpen, setIsOpen] = useState(false); 
-    return (
-        <header className="site-header">
-            <a className="logo" href="../../index.html">
-            <img src="public/img/logo.png" alt="logo Buen Origen" height="45" /> 
-            </a>
-        <nav className="main-nav">
-        <div className="nav-group"
-                onMouseEnter={() => {setIsOpen(true)}}
-                onMouseLeave={() => {setIsOpen(false)}}>
-                <a href="/">PRODUCTOS</a>
-                    {isOpen&& (
-                    <div className="dropdown">
-                {SubCategorias.map(function (sub) {
-                return (
-                    <a key={sub.id} href={sub.link} >{sub.name}</a>
-                    );  
-                })} 
-                </div>
-            )}
+export function Header({
+  openCart,
+  openAuth,
+}: {
+  openCart: () => void;
+  openAuth: () => void;
+}) {
+
+  const { count, notify } = useCart();
+  const { user, logout } = useAccount();
+  const account = user ?? demoAccountSummary;
+  const [menu, setMenu] = useState(false);
+  const [announcementOpen, setAnnouncementOpen] = useState(true);
+  const [categoryMenu, setCategoryMenu] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  return (
+    <div className="site-navigation">
+      {announcementOpen && (
+        <div className="announcement-bar">
+          <p>
+            Regístrate con nosotros, regalamos puntos verdes al iniciar sesión.
+          </p>
+          <button
+            aria-label="Cerrar anuncio"
+            onClick={() => setAnnouncementOpen(false)}
+          >
+            ×
+          </button>
         </div>
+      )}
+      <header className="site-header">
+        <Link className="logo" to="/" aria-label="Buen Origen, inicio">
+          <img
+            className="figma-brand"
+            src="/img/figma/login-imgLogoCompletoBuenOrigen2.png"
+            alt="Buen Origen"
+          />
+        </Link>
+        <nav className="main-nav">
+          <div
+            className={`nav-group${categoryMenu ? ' expanded' : ''}`}
+            onBlur={(event) => {
 
-        <a href="/">¿QUIÉNES SOMOS?</a>
-        <a href="/">BLOG</a>
-        <a href="/">APP</a>
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setCategoryMenu(false);
+              }
+            }}
+            onKeyDown={(event) => {
+
+              if (event.key === 'Escape') setCategoryMenu(false);
+            }}
+          >
+            <button
+              className="nav-trigger"
+              aria-expanded={categoryMenu}
+              aria-controls="category-menu"
+              onClick={() => setCategoryMenu(!categoryMenu)}
+            >
+              Categorías
+            </button>
+            <div className="dropdown" id="category-menu" inert={!categoryMenu}>
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/productos/${category.id}`}
+                  onClick={() => setCategoryMenu(false)}
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <Link to="/productos/ropa-y-accesorios">Nuestros Productos</Link>
+          <Link to="/#huella-verde">¿Qué es tu Huella Verde?</Link>
+          <Link to="/#blog">Blog</Link>
         </nav>
+        <div className="header-actions">
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Buscar productos"
+            disabled
+          >
+            <HeaderIcon name="search" />
+          </button>
+          {!user && (
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="Productos guardados"
+              disabled
+            >
+              <HeaderIcon name="heart" />
+            </button>
+          )}
+          <div className="account-menu-wrap">
+            <button
+              className="account-greeting-button"
+              aria-label={user ? 'Mi cuenta' : 'Iniciar sesión'}
+              aria-expanded={user ? menu : undefined}
+              aria-controls={user ? 'account-menu' : undefined}
+              onClick={() =>
+                user
+                  ? setMenu(!menu)
+                  : location.pathname === '/acceso'
+                    ? navigate('/acceso')
+                    : openAuth()
+              }
+            >
+              {`¡Hola ${account.name}!`}
+            </button>
+            {user && (
+              <>
+                {menu && (
+                  <>
+                    <button
+                      className="menu-dismiss"
+                      aria-label="Cerrar menú de cuenta"
+                      onClick={() => setMenu(false)}
+                    />
+                    <nav
+                      className="account-dropdown"
+                      id="account-menu"
+                      aria-label="Mi cuenta"
+                    >
+                      {[
+                        ['compras', 'Mis compras'],
+                        ['puntos-verdes', 'Puntos Verdes'],
+                        ['datos-personales', 'Datos personales'],
+                      ].map(([path, label]) => (
+                        <Link
+                          key={path}
+                          to={`/mi-cuenta/${path}`}
+                          onClick={() => setMenu(false)}
+                        >
+                          {label}
+                        </Link>
+                      ))}
+                      <button
+                        onClick={() => {
 
-    <div className="header-actions">
-        <button className="icon-button">⌕</button>
-        <button className="icon-button">♥</button>
-        <button className="icon-button user-trigger" aria-label="Mi cuenta">●</button>
-        <button className="icon-button cart-trigger">🛒<span className="cart-badge">0</span>
-        </button>
+                          logout();
+
+                          setMenu(false);
+
+                          notify('Cerraste sesión');
+
+                          navigate('/acceso');
+                        }}
+                      >
+                        Cerrar sesión
+                      </button>
+                    </nav>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+          <Link className="header-points" to="/mi-cuenta/puntos-verdes">
+            <HeaderIcon name="leaf" /> Tienes:{' '}
+            {account.points.toLocaleString('es-CL')} Puntos Verdes
+          </Link>
+          <button
+            className="icon-button cart-trigger"
+            aria-label="Carrito"
+            onClick={openCart}
+          >
+            <HeaderIcon name="cart" />
+            <span className="cart-badge">{count}</span>
+          </button>
+        </div>
+      </header>
     </div>
-</header>
-)
-} 
+  );
+}

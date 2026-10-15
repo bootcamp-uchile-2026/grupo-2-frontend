@@ -1,0 +1,276 @@
+body,
+button,
+input,
+select,
+textarea {
+  font-family: 'Poppins', Arial, sans-serif;
+}
+.site-navigation .logo .figma-brand {
+  width: 112px;
+  height: auto;
+}
+.hero-art > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero-copy .btn {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+.hero-copy > p {
+  margin-top: 28px;
+  font-size: 13px;
+  max-width: 560px;
+}
+.category-card span {
+  font-weight: 600;
+  color: #393939;
+  font-size: 16px;
+}
+.category-cutout {
+  width: 180px;
+  height: 173px;
+  object-fit: contain;
+  border-radius: 0;
+}
+.category-cards {
+  row-gap: 38px;
+}
+.commitment-grid article {
+  background:
+    linear-gradient(#0008, #0008),
+    url('/img/figma/commitments-imgFrame1153.png') center/cover;
+}
+.commitment-icon {
+  background: #192e21;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  margin-inline: auto;
+}
+.commitment-icon img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.blog-card > img {
+  aspect-ratio: 320 / 186;
+  height: auto;
+  object-fit: cover;
+}
+.blog-card h3 {
+  font-size: 25px;
+  line-height: 1.15;
+}
+.blog-card-body {
+  padding: 22px;
+}
+.blog-card-body > p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.site-footer {
+  background: #203b2b;
+}
+.footer-socials img {
+  display: inline-block;
+}
+.figma-store-badge {
+  display: block;
+  margin-bottom: 14px;
+}
+.makers-section {
+  padding-block: 70px;
+}
+.makers-intro {
+  text-align: center;
+  color: #6f787e;
+  font-size: 16px;
+  margin: 20px 0 40px;
+}
+.makers-carousel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.makers-carousel > button {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.makers-track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 2px;
+  min-width: 0;
+}
+.maker-card {
+  scroll-snap-align: start;
+  flex: 0 0 calc((100% - 48px) / 3.15);
+  border-radius: 32px;
+  background: white;
+  padding: 8px 8px 16px;
+  text-align: center;
+  box-shadow: 0 0 2px #0004;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.maker-cover {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 24px;
+}
+.maker-portrait {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: -82px;
+  position: relative;
+}
+.maker-card h3 {
+  font:
+    bold 24px Georgia,
+    serif;
+  color: #0f1b14;
+  margin: 16px 0 4px;
+}
+.maker-card strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.maker-card p {
+  font-size: 12px;
+  line-height: 16px;
+  padding-inline: 16px;
+}
+.maker-more {
+  margin-top: auto;
+  min-height: 32px;
+  color: #82895a;
+  text-decoration: underline;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: white;
+  min-height: 780px;
+}
+.auth-forest {
+  background: url('/img/figma/login-imgImagenDeAccesoACuenta.png') center/cover;
+}
+.auth-layout .auth-page {
+  max-width: 460px;
+  padding: 55px 30px;
+  margin: auto;
+}
+.auth-logo {
+  display: block;
+  width: 130px;
+  height: auto;
+  margin: 0 auto 36px;
+}
+.auth-page h1 {
+  text-align: center;
+  font:
+    bold 38px Georgia,
+    serif;
+  color: #203b2b;
+  margin: 0 0 12px;
+}
+.auth-page h1 + p {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+.auth-page .account-form label {
+  font-size: 14px;
+  gap: 8px;
+}
+.auth-page .account-form input {
+  background: #f2f3f3;
+  border: 0;
+  border-radius: 8px;
+  min-height: 50px;
+  padding: 14px;
+  font-size: 13px;
+}
+.auth-page .account-form .btn {
+  width: 100%;
+  background: #ba6035;
+  min-height: 52px;
+  margin-top: 12px;
+}
+.auth-page .auth-divider {
+  color: #82895a;
+  font-size: 12px;
+  margin-block: 26px;
+}
+.auth-page .social-login {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.auth-page .social-login .btn {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
+.auth-page .auth-secondary-actions {
+  justify-content: center;
+  margin-top: 28px;
+}
+.auth-page .text-link {
+  font-size: 13px;
+}
+.auth-page .demo-details {
+  font-size: 11px;
+  margin-top: 24px;
+}
+@media (max-width: 700px) {
+  .category-cutout {
+    width: 140px;
+    height: 135px;
+  }
+  .category-card span {
+    font-size: 13px;
+  }
+  .auth-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .auth-forest {
+    height: 160px;
+  }
+  .auth-layout .auth-page {
+    padding: 30px 24px;
+  }
+  .makers-carousel {
+    gap: 8px;
+  }
+  .maker-card {
+    flex-basis: 270px;
+  }
+  .maker-cover {
+    width: 254px;
+  }
+  .makers-section {
+    padding-block: 40px;
+  }
+}
