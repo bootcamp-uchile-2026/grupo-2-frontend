@@ -13,7 +13,7 @@ npm test
 npm run format:check
 ```
 
-`npm run format` conserva imports en una línea y separa con líneas en blanco los bloques de variables, efectos, métodos y retorno.
+`npm run format` conserva cada import y cada firma de componente, función, método o clase en una sola línea, incluidos los parámetros y tipos de props. Separa con líneas en blanco los bloques de variables, efectos, métodos y retorno. Estas reglas permanentes están en `AGENTS.md`.
 
 ## Organización
 

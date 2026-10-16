@@ -15,6 +15,7 @@ import { Modal } from '../components/Modal';
 import './Checkout.css';
 
 function estimatedDelivery() {
+
   const date = new Date();
   let days = 0;
 
@@ -33,6 +34,7 @@ function estimatedDelivery() {
 }
 
 export function Checkout() {
+
   const { cart, setCart, total, notify } = useCart();
   const { user, placeOrder } = useAccount();
   const [noNumber, setNoNumber] = useState(false);
@@ -45,6 +47,7 @@ export function Checkout() {
   const earnedPoints = Math.floor(total / 100);
 
   function confirm(event: FormEvent<HTMLFormElement>, data: ShippingData) {
+
     event.preventDefault();
 
     if (!cart.length) {
@@ -98,6 +101,7 @@ export function Checkout() {
   }
 
   function pay() {
+
     if (!pending) return;
 
     if (decline) {
@@ -176,13 +180,6 @@ export function Checkout() {
               confirm={confirm}
               noNumber={noNumber}
               setNoNumber={setNoNumber}
-              contact={{
-                name: user?.name || '',
-                lastName: user?.lastName || '',
-                email: user?.email || '',
-                phone: user?.phone || '',
-                rut: user?.rut || '',
-              }}
             />
             <div className="checkout-payment-grid">
               <section className="checkout-payment">

@@ -7,30 +7,42 @@ import { categories } from '../data/categories';
 import { EmptyState } from '../components/EmptyState';
 
 export function Catalog() {
+
   const { category = 'ropa-y-accesorios' } = useParams();
   const selected = categories.find((c) => c.id === category);
   const toolbar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+
     function closeMenus(event: PointerEvent | KeyboardEvent) {
+
       if (event instanceof KeyboardEvent && event.key !== 'Escape') return;
+
       if (
         event instanceof PointerEvent &&
         toolbar.current?.contains(event.target as Node)
       )
         return;
+
       toolbar.current
         ?.querySelectorAll<HTMLDetailsElement>('.catalog-dropdown[open]')
         .forEach((menu) => {
+
           menu.open = false;
+
           if (event instanceof KeyboardEvent)
             menu.querySelector('summary')?.focus();
         });
     }
+
     document.addEventListener('pointerdown', closeMenus);
+
     document.addEventListener('keydown', closeMenus);
+
     return () => {
+
       document.removeEventListener('pointerdown', closeMenus);
+
       document.removeEventListener('keydown', closeMenus);
     };
   }, []);
@@ -58,17 +70,14 @@ export function Catalog() {
       [
         filterLabels[field],
         ...new Set(
-          departmentProducts.flatMap((product) =>
-            String(product[field as keyof typeof product]).split(','),
+          departmentProducts.flatMap((product) => String(product[field as keyof typeof product]).split(','),
           ),
         ),
       ],
     ]),
   );
-  let visible = departmentProducts.filter((p) =>
-    Object.entries(filters).every(
-      ([key, value]) =>
-        value === 'all' ||
+  let visible = departmentProducts.filter((p) => Object.entries(filters).every(
+      ([key, value]) => value === 'all' ||
         p[key as keyof typeof p].toString().split(',').includes(value),
     ),
   );
@@ -120,8 +129,7 @@ export function Catalog() {
                         type="radio"
                         name={'filter-' + key}
                         checked={(filters[key] || 'all') === value}
-                        onChange={() =>
-                          setFilters({ ...filters, [key]: value })
+                        onChange={() => setFilters({ ...filters, [key]: value })
                         }
                       />
                       {value === 'all'
@@ -157,7 +165,9 @@ export function Catalog() {
                 key={value}
                 aria-pressed={sort === value}
                 onClick={(event) => {
+
                   setSort(value);
+
                   event.currentTarget
                     .closest('details')
                     ?.removeAttribute('open');

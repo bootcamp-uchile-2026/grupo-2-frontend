@@ -10,6 +10,7 @@ import { EmptyIllustration } from '../components/EmptyIllustration';
 import type { CartItem } from '../store/cart';
 
 export function Cart({ openAuth }: { openAuth: () => void }) {
+
   const { cart, setCart, total, notify, add } = useCart();
   const { user } = useAccount();
   const [saved, setSaved] = useState(() => readItems('eco-saved'));
@@ -17,12 +18,14 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
   const navigate = useNavigate();
 
   function updateSaved(items: CartItem[]) {
+
     localStorage.setItem('eco-saved', JSON.stringify(items));
 
     setSaved(items);
   }
 
   function save(index: number) {
+
     const item = cart[index];
 
     updateSaved([...saved, item]);
@@ -33,6 +36,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
   }
 
   function pay() {
+
     if (!cart.length) {
       setError('Tu carrito está vacío. Agrega un producto para continuar.');
 
@@ -92,10 +96,8 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                   <div className="quantity">
                     <button
                       aria-label={`Disminuir cantidad de ${p.name}`}
-                      onClick={() =>
-                        setCart(
-                          cart.map((x, index) =>
-                            index === i
+                      onClick={() => setCart(
+                          cart.map((x, index) => index === i
                               ? { ...x, qty: Math.max(1, x.qty - 1) }
                               : x,
                           ),
@@ -107,10 +109,8 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     <span>{p.qty}</span>
                     <button
                       aria-label={`Aumentar cantidad de ${p.name}`}
-                      onClick={() =>
-                        setCart(
-                          cart.map((x, index) =>
-                            index === i ? { ...x, qty: x.qty + 1 } : x,
+                      onClick={() => setCart(
+                          cart.map((x, index) => index === i ? { ...x, qty: x.qty + 1 } : x,
                           ),
                         )
                       }
@@ -125,6 +125,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     className="remove"
                     aria-label={`Eliminar ${p.name}`}
                     onClick={() => {
+
                       setCart(cart.filter((_, index) => index !== i));
 
                       notify(`${p.name} se eliminó del carrito`);
@@ -194,6 +195,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     <button
                       className="btn"
                       onClick={() => {
+
                         add(item, item.qty);
 
                         updateSaved(saved.filter((_, index) => index !== i));
@@ -203,8 +205,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     </button>
                     <button
                       className="btn outline"
-                      onClick={() =>
-                        updateSaved(saved.filter((_, index) => index !== i))
+                      onClick={() => updateSaved(saved.filter((_, index) => index !== i))
                       }
                       aria-label={`Eliminar ${item.name} de guardados`}
                     >

@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { productImages } from '../data/productImages';
 
-export function ProductImage({
-  name,
-  className = '',
-  priority = false,
-}: {
-  name: string;
-  className?: string;
-  priority?: boolean;
-}) {
+export function ProductImage({ name, className = '', priority = false, }: { name: string; className?: string; priority?: boolean; }) {
 
   const [failed, setFailed] = useState(false);
   const image = productImages[name];

@@ -88,13 +88,7 @@ const account = {
   placeOrder: noop,
 };
 
-function render(
-  Component,
-  route,
-  routePattern = '*',
-  props = {},
-  accountValue = account,
-) {
+function render( Component, route, routePattern = '*', props = {}, accountValue = account, ) {
   return renderToString(
     createElement(
       MemoryRouter,
@@ -329,7 +323,7 @@ const { shippingSchema } = await server.ssrLoadModule(
   '/src/pages/shippingSchema.ts',
 );
 const validShipping = {
-  firstName: ' Ana ',
+  firstName: ' Ana María Isabel ',
   lastName: 'Pérez',
   email: 'ana@example.com',
   rut: '12.345.678-5',
@@ -346,7 +340,7 @@ const validShipping = {
 test('Zod valida contacto y dirección y limpia espacios', () => {
   const result = shippingSchema.safeParse(validShipping);
   assert.equal(result.success, true);
-  assert.equal(result.data.firstName, 'Ana');
+  assert.equal(result.data.firstName, 'Ana María Isabel');
   for (const [field, value] of Object.entries({
     firstName: '   ',
     lastName: '',
@@ -367,6 +361,37 @@ test('Zod valida contacto y dirección y limpia espacios', () => {
       invalid.error.issues.some((issue) => issue.path[0] === field),
       field,
     );
+  }
+});
+
+test('Zod exige al menos tres letras en el nombre', () => {
+  for (const firstName of ['', 'C', 'Ca', ' Ca ']) {
+    assert.equal(
+      shippingSchema.safeParse({ ...validShipping, firstName }).success,
+      false,
+    );
+  }
+  for (const firstName of ['Ana', 'Carlos', 'Carlos Ortiz']) {
+    assert.equal(
+      shippingSchema.safeParse({ ...validShipping, firstName }).success,
+      true,
+    );
+  }
+});
+
+test('El formulario comienza sin datos precargados', () => {
+  const html = render(ShippingForm, '/checkout', '*', {
+    confirm: noop,
+    noNumber: false,
+    setNoNumber: noop,
+  });
+  for (const name of ['firstName', 'lastName', 'email', 'rut', 'phone']) {
+    const input = html.match(
+      new RegExp(`<input[^>]*name="${name}"[^>]*>`),
+    )?.[0];
+    assert.ok(input);
+    assert.doesNotMatch(input, /value="[^"]+"/);
+    assert.match(input, /placeholder=/);
   }
 });
 

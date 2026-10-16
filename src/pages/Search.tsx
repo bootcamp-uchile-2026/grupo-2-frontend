@@ -3,18 +3,19 @@ import { products } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 
-const normalize = (value: string) =>
-  value
+const normalize = (value: string) => value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
 export function Search() {
+
   const [params] = useSearchParams();
   const query = (params.get('q') ?? '').trim();
   const words = normalize(query).split(/\s+/).filter(Boolean);
   const results = words.length
     ? products.filter((product) => {
+
         const text = normalize(
           product.name +
             ' ' +
@@ -24,6 +25,7 @@ export function Search() {
             ' ' +
             product.material,
         );
+
         return words.every((word) => text.includes(word));
       })
     : [];

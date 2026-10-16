@@ -1,4 +1,5 @@
 export function EmptyIllustration({ cart = false }: { cart?: boolean }) {
+
   return (
     <svg
       className="empty-illustration"

@@ -7,11 +7,12 @@ const photos = Object.entries(bannerImages).map(([category, photo]) => ({
   source:
     photo.source ??
     (photo.src
-      ? 'Generada con OpenAI ImageGen para este proyecto'
+      ? 'Recurso visual del proyecto'
       : `https://www.pexels.com/photo/${photo.id}/`),
   file: photo.src ?? `/img/banners/${category}.jpg`,
   generated: Boolean(photo.src && !photo.source),
 }));
+
 const directory = new URL('../public/img/banners/', import.meta.url);
 
 await fs.mkdir(directory, { recursive: true });

@@ -8,7 +8,9 @@ export function WelcomeBanner() {
   const account = user ?? demoAccountSummary;
 
   useEffect(() => {
+
     const timer = setTimeout(() => setVisible(false), 2000);
+
     return () => clearTimeout(timer);
   }, []);
 

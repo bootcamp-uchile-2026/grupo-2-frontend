@@ -2,6 +2,7 @@ import { productLabels } from '../data/products';
 import { useCart } from '../store/cart';
 
 export function CartOptions({ index }: { index: number }) {
+
   const { cart } = useCart();
   const item = cart[index];
   const labels = productLabels(item);

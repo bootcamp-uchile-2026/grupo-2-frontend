@@ -15,8 +15,7 @@ export function readItems(key: string): CartItem[] {
 
     return Array.isArray(value)
       ? value.filter(
-          (p): p is CartItem =>
-            p &&
+          (p): p is CartItem => p &&
             typeof p.name === 'string' &&
             Number.isFinite(p.price) &&
             p.price >= 0 &&

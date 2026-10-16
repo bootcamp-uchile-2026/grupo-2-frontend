@@ -10,26 +10,21 @@ import { AuthForm } from './AuthForm';
 import { Modal } from './Modal';
 import { WelcomeBanner } from './WelcomeBanner';
 
-export function Layout({
-  layer,
-  setLayer,
-}: {
-  layer: string;
-  setLayer: (layer: string) => void;
-}) {
+export function Layout({ layer, setLayer, }: { layer: string; setLayer: (layer: string) => void; }) {
+
   const { cart, setCart, count, add, message, notify } = useCart();
   const location = useLocation();
   const isHome = location.pathname === '/';
   const showToast = message && !(isHome && message.startsWith('¡Bienvenida'));
 
   useEffect(() => {
+
     setLayer('');
 
     document.body.classList.toggle('home-page', location.pathname === '/');
 
     if (location.hash)
-      requestAnimationFrame(() =>
-        document.getElementById(location.hash.slice(1))?.scrollIntoView(),
+      requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView(),
       );
     else window.scrollTo(0, 0);
   }, [location, setLayer]);
@@ -59,10 +54,8 @@ export function Layout({
                         <button
                           aria-label={'Disminuir cantidad de ' + p.name}
                           disabled={p.qty <= 1}
-                          onClick={() =>
-                            setCart(
-                              cart.map((item, index) =>
-                                index === i
+                          onClick={() => setCart(
+                              cart.map((item, index) => index === i
                                   ? { ...item, qty: Math.max(1, item.qty - 1) }
                                   : item,
                               ),
@@ -74,10 +67,8 @@ export function Layout({
                         <span>{p.qty}</span>
                         <button
                           aria-label={'Aumentar cantidad de ' + p.name}
-                          onClick={() =>
-                            setCart(
-                              cart.map((item, index) =>
-                                index === i
+                          onClick={() => setCart(
+                              cart.map((item, index) => index === i
                                   ? { ...item, qty: item.qty + 1 }
                                   : item,
                               ),
@@ -91,7 +82,9 @@ export function Layout({
                         className="text-link"
                         aria-label={'Eliminar ' + p.name}
                         onClick={() => {
+
                           setCart(cart.filter((_, index) => index !== i));
+
                           notify(p.name + ' se eliminó del carrito');
                         }}
                       >

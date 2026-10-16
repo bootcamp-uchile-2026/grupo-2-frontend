@@ -1,23 +1,33 @@
 import { z } from 'zod';
 
 function validRut(value: string) {
+
   const rut = value.replace(/[.\s-]/g, '').toUpperCase();
+
   if (!/^\d{7,8}[\dK]$/.test(rut)) return false;
+
   let sum = 0;
   let multiplier = 2;
+
   for (const digit of rut.slice(0, -1).split('').reverse()) {
     sum += Number(digit) * multiplier;
+
     multiplier = multiplier === 7 ? 2 : multiplier + 1;
   }
+
   const remainder = 11 - (sum % 11);
   const check =
     remainder === 11 ? '0' : remainder === 10 ? 'K' : String(remainder);
+
   return rut.at(-1) === check;
 }
 
 export const shippingSchema = z
   .object({
-    firstName: z.string().trim().min(1, 'Ingresa tu nombre.'),
+    firstName: z
+      .string()
+      .trim()
+      .min(3, 'El nombre debe tener al menos 3 letras.'),
     lastName: z.string().trim().min(1, 'Ingresa tu apellido.'),
     email: z.string().trim().email('Ingresa un correo electrónico válido.'),
     rut: z
@@ -43,6 +53,7 @@ export const shippingSchema = z
     instructions: z.string().trim(),
   })
   .superRefine((data, context) => {
+
     if (!data.noNumber && !/^\d+[a-zA-Z]?$/.test(data.number)) {
       context.addIssue({
         code: 'custom',

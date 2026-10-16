@@ -4,6 +4,7 @@ import { categories } from '../../data/categories';
 import { useCart } from '../../store/cart';
 
 export function Header({ openCart }: { openCart: () => void }) {
+
   const { count } = useCart();
   const [announcementOpen, setAnnouncementOpen] = useState(true);
   const [categoryMenu, setCategoryMenu] = useState(false);
@@ -36,11 +37,13 @@ export function Header({ openCart }: { openCart: () => void }) {
           <div
             className={`nav-group${categoryMenu ? ' expanded' : ''}`}
             onBlur={(event) => {
+
               if (!event.currentTarget.contains(event.relatedTarget)) {
                 setCategoryMenu(false);
               }
             }}
             onKeyDown={(event) => {
+
               if (event.key === 'Escape') setCategoryMenu(false);
             }}
           >

@@ -3,56 +3,99 @@ import type { FormEvent } from 'react';
 import { shippingSchema } from './shippingSchema';
 import type { ShippingData } from './shippingSchema';
 
-export function ShippingForm({
-  confirm,
-  noNumber,
-  setNoNumber,
-  contact,
-}: {
-  confirm: (event: FormEvent<HTMLFormElement>, data: ShippingData) => void;
-  noNumber: boolean;
-  setNoNumber: (value: boolean) => void;
-  contact: {
-    name: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    rut: string;
-  };
-}) {
+export function ShippingForm({ confirm, noNumber, setNoNumber, }: { confirm: (event: FormEvent<HTMLFormElement>, data: ShippingData) => void; noNumber: boolean; setNoNumber: (value: boolean) => void; }) {
+
   const [identificationOpen, setIdentificationOpen] = useState(true);
   const [shippingOpen, setShippingOpen] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const touched = useRef(new Set<string>());
+
+  function validateField(event: FormEvent<HTMLFormElement>) {
+
+    const field = event.target;
+
+    if (!(
+      field instanceof HTMLInputElement ||
+      field instanceof HTMLSelectElement ||
+      field instanceof HTMLTextAreaElement
+    ))
+      return;
+
+    const isNoNumber = field.id === 'no-street-number';
+    const name = isNoNumber ? 'number' : field.name;
+
+    if (!name) return;
+
+    touched.current.add(name);
+
+    const data = new FormData(event.currentTarget);
+    const result = shippingSchema.safeParse({
+      ...Object.fromEntries(data),
+      number: data.get('number') ?? '',
+      noNumber:
+        isNoNumber && field instanceof HTMLInputElement
+          ? field.checked
+          : noNumber,
+    });
+    const next: Record<string, string> = {};
+
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const key = String(issue.path[0]);
+
+        if (touched.current.has(key)) next[key] ??= issue.message;
+      }
+    }
+
+    setErrors(next);
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
+
     event.preventDefault();
+
     const data = new FormData(event.currentTarget);
     const result = shippingSchema.safeParse({
       ...Object.fromEntries(data),
       number: data.get('number') ?? '',
       noNumber,
     });
+
     if (!result.success) {
       const next: Record<string, string> = {};
+
       for (const issue of result.error.issues) {
         const field = String(issue.path[0]);
+
         next[field] ??= issue.message;
+
+        touched.current.add(field);
       }
+
       setErrors(next);
+
       setIdentificationOpen(true);
+
       setShippingOpen(true);
+
       requestAnimationFrame(() => {
+
         const field = formRef.current?.elements.namedItem(Object.keys(next)[0]);
+
         if (field instanceof HTMLElement) field.focus();
       });
+
       return;
     }
+
     setErrors({});
+
     confirm(event, result.data);
   }
 
   function fieldError(name: string) {
+
     return errors[name] ? (
       <span className="form-error" id={name + '-error'} role="alert">
         {errors[name]}
@@ -66,7 +109,10 @@ export function ShippingForm({
       className="checkout-form"
       id="checkout-form"
       noValidate
+      autoComplete="off"
       onSubmit={submit}
+      onChange={validateField}
+      onBlur={validateField}
     >
       <section className="checkout-form-panel" data-section="identification">
         <h2>
@@ -107,8 +153,7 @@ export function ShippingForm({
               }
               placeholder="Nombre*"
               required
-              defaultValue={contact.name}
-              autoComplete="given-name"
+              autoComplete="off"
             />
             {fieldError('firstName')}
           </label>
@@ -120,8 +165,7 @@ export function ShippingForm({
               aria-describedby={errors.lastName ? 'lastName-error' : undefined}
               placeholder="Apellido*"
               required
-              defaultValue={contact.lastName}
-              autoComplete="family-name"
+              autoComplete="off"
             />
             {fieldError('lastName')}
           </label>
@@ -134,8 +178,7 @@ export function ShippingForm({
               placeholder="Correo electrónico*"
               type="email"
               required
-              defaultValue={contact.email}
-              autoComplete="email"
+              autoComplete="off"
             />
             {fieldError('email')}
           </label>
@@ -147,7 +190,7 @@ export function ShippingForm({
               aria-describedby={errors.rut ? 'rut-error' : undefined}
               placeholder="RUT*"
               required
-              defaultValue={contact.rut}
+              autoComplete="off"
             />
             {fieldError('rut')}
           </label>
@@ -160,8 +203,7 @@ export function ShippingForm({
               placeholder="Teléfono*"
               type="tel"
               required
-              defaultValue={contact.phone}
-              autoComplete="tel"
+              autoComplete="off"
             />
             {fieldError('phone')}
           </label>
