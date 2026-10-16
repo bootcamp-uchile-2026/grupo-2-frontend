@@ -1,18 +1,42 @@
 import { ProductCard } from '../components/ProductCard';
 import { BannerImage } from '../components/BannerImage';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { products } from '../data/products';
 import { categories } from '../data/categories';
 import { EmptyState } from '../components/EmptyState';
 
 export function Catalog() {
-
   const { category = 'ropa-y-accesorios' } = useParams();
   const selected = categories.find((c) => c.id === category);
+  const toolbar = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function closeMenus(event: PointerEvent | KeyboardEvent) {
+      if (event instanceof KeyboardEvent && event.key !== 'Escape') return;
+      if (
+        event instanceof PointerEvent &&
+        toolbar.current?.contains(event.target as Node)
+      )
+        return;
+      toolbar.current
+        ?.querySelectorAll<HTMLDetailsElement>('.catalog-dropdown[open]')
+        .forEach((menu) => {
+          menu.open = false;
+          if (event instanceof KeyboardEvent)
+            menu.querySelector('summary')?.focus();
+        });
+    }
+    document.addEventListener('pointerdown', closeMenus);
+    document.addEventListener('keydown', closeMenus);
+    return () => {
+      document.removeEventListener('pointerdown', closeMenus);
+      document.removeEventListener('keydown', closeMenus);
+    };
+  }, []);
+
   const [sort, setSort] = useState('featured');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [open, setOpen] = useState(false);
 
   const departmentProducts = products.filter(
     (product) => product.department === category,
@@ -74,64 +98,81 @@ export function Catalog() {
         <BannerImage category={category} priority />
         <h1 className="category-title">{selected.name}</h1>
       </div>
-      <div className="catalog-toolbar">
-        <button
-          className="toolbar-button filter-toggle"
-          aria-expanded={open}
-          aria-controls="catalog-filters"
-          onClick={() => setOpen(!open)}
+      <div className="catalog-toolbar" ref={toolbar}>
+        <details className="catalog-dropdown" name="catalog-tools">
+          <summary>
+            Filtrar <span className="dropdown-chevron" aria-hidden="true" />
+          </summary>
+          <div className="catalog-dropdown-panel filter-dropdown-panel">
+            {Object.entries(options).map(([key, values]) => (
+              <details className="filter-choice" key={key}>
+                <summary>
+                  {values[0]}
+                  {filters[key] && filters[key] !== 'all'
+                    ? ': ' + filters[key]
+                    : ''}{' '}
+                  <span className="dropdown-chevron" aria-hidden="true" />
+                </summary>
+                <div className="filter-choice-options">
+                  {['all', ...values.slice(1)].map((value) => (
+                    <label key={value}>
+                      <input
+                        type="radio"
+                        name={'filter-' + key}
+                        checked={(filters[key] || 'all') === value}
+                        onChange={() =>
+                          setFilters({ ...filters, [key]: value })
+                        }
+                      />
+                      {value === 'all'
+                        ? 'Todos'
+                        : value === 'algodon'
+                          ? 'Algodón'
+                          : value.charAt(0).toUpperCase() + value.slice(1)}
+                    </label>
+                  ))}
+                </div>
+              </details>
+            ))}
+            <button className="clear-filters" onClick={() => setFilters({})}>
+              Limpiar filtros
+            </button>
+          </div>
+        </details>
+        <details
+          className="catalog-dropdown sort-dropdown"
+          name="catalog-tools"
         >
-          Filtrar
-          <svg
-            className="filter-chevron"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </button>
-        <label className="sort-wrap">
-          Ordenar por{' '}
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="featured">Destacados</option>
-            <option value="asc">Menor a mayor precio</option>
-            <option value="desc">Mayor a menor precio</option>
-            <option value="new">Más recientes</option>
-          </select>
-        </label>
-        <span className="product-count">{visible.length} productos</span>
-      </div>
-      <div className={`catalog-layout${open ? ' filters-open' : ''}`}>
-        <aside className="filters" id="catalog-filters" inert={!open}>
-          <h2>FILTROS</h2>
-          {Object.entries(options).map(([key, values]) => (
-            <label key={key}>
-              <span className="sr-only">{values[0]}</span>
-              <select
-                value={filters[key] || 'all'}
-                onChange={(e) =>
-                  setFilters({ ...filters, [key]: e.target.value })
-                }
+          <summary>
+            Ordenar por <span className="dropdown-chevron" aria-hidden="true" />
+          </summary>
+          <div className="catalog-dropdown-panel sort-dropdown-panel">
+            {[
+              ['asc', 'Precio menor a mayor'],
+              ['desc', 'Precio mayor a menor'],
+              ['featured', 'Productos destacados'],
+              ['new', 'Productos más recientes'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                aria-pressed={sort === value}
+                onClick={(event) => {
+                  setSort(value);
+                  event.currentTarget
+                    .closest('details')
+                    ?.removeAttribute('open');
+                }}
               >
-                {values.map((v, i) => (
-                  <option key={v} value={i === 0 ? 'all' : v}>
-                    {v === 'algodon'
-                      ? 'Algodón'
-                      : v[0].toUpperCase() + v.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-          <button className="clear-filters" onClick={() => setFilters({})}>
-            Limpiar filtros
-          </button>
-        </aside>
+                {label}
+              </button>
+            ))}
+          </div>
+        </details>
+        <span className="product-count" role="status">
+          {visible.length} productos
+        </span>
+      </div>
+      <div className="catalog-layout">
         <div className="catalog-assortment">
           <aside className="catalog-story">
             <BannerImage category={category} />

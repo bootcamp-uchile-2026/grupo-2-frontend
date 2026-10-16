@@ -54,7 +54,7 @@ export function BlogSection() {
           onClick={() => move(-1)}
         >
           <img
-            src="/img/figma/blog-imgIconixtoSolidArrowSquareLeft1.svg"
+            src="/img/figma/entrepreneurs-imgFrame1507.svg"
             alt=""
           />
         </button>
@@ -85,7 +85,7 @@ export function BlogSection() {
           onClick={() => move(1)}
         >
           <img
-            src="/img/figma/blog-imgIconixtoSolidArrowSquareRight1.svg"
+            src="/img/figma/entrepreneurs-imgIconixtoSolidArrowSquareRight1.svg"
             alt=""
           />
         </button>

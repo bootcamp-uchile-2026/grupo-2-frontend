@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAccount, demoAccountSummary } from '../store/account';
 
 export function WelcomeBanner() {
@@ -6,6 +6,11 @@ export function WelcomeBanner() {
   const [visible, setVisible] = useState(true);
   const { user } = useAccount();
   const account = user ?? demoAccountSummary;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!visible) return null;
 

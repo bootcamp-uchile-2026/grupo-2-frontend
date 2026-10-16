@@ -1,7 +1,8 @@
+import { CartOptions } from '../components/CartOptions';
 import { ProductImage } from '../components/ProductImage';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { money, productUrl, productLabels } from '../data/products';
+import { money, productLabels } from '../data/products';
 import { readItems, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import { Steps } from '../components/Steps';
@@ -44,7 +45,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
       )
     ) {
       setError(
-        'Antes de pagar, usa “Editar” para seleccionar la talla y el color de tus productos.',
+        'Antes de pagar, vuelve a la ficha del producto para seleccionar talla y color.',
       );
 
       return;
@@ -75,24 +76,14 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             )}
             <div id="cart-lines">
               {cart.map((p, i) => (
-                <article
-                  className="cart-line"
-                  key={`${p.name}-${p.size}-${p.color}-${i}`}
-                >
+                <article className="cart-line" key={`${p.name}-${i}`}>
                   <ProductImage name={p.name} />
                   <div className="cart-line-info">
                     <h3>{p.name}</h3>
                     <p>Producto sustentable de producción local.</p>
-                    <strong>
-                      {productLabels(p).size}: {p.size}
-                      <br />
-                      {productLabels(p).color}: {p.color}
-                    </strong>
+                    <CartOptions index={i} />
                     <p>{money(p.price)}</p>
                     <div className="cart-item-actions">
-                      <Link className="btn" to={`${productUrl(p)}&edit=${i}`}>
-                        Editar
-                      </Link>
                       <button className="btn" onClick={() => save(i)}>
                         Guardar para después
                       </button>
@@ -139,7 +130,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                       notify(`${p.name} se eliminó del carrito`);
                     }}
                   >
-                    🗑
+                    Eliminar
                   </button>
                 </article>
               ))}
@@ -150,7 +141,17 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             <div className="cart-bottom">
               <div>
                 <h2>Huella verde de tu compra</h2>
-                <div className="cart-footprint" />
+                <div
+                  className="cart-footprint"
+                  aria-label={
+                    'Ganarás ' + Math.floor(total / 100) + ' Puntos Verdes'
+                  }
+                >
+                  <strong>{Math.floor(total / 100)} pts</strong>
+                  <span>
+                    <img src="/img/figma/home-leaf.svg" alt="" /> Puntos Verdes
+                  </span>
+                </div>
               </div>
               <div className="cart-buttons">
                 <Link className="btn" to="/productos/ropa-y-accesorios">

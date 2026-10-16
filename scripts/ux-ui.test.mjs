@@ -263,10 +263,8 @@ test('Las fichas de todas las categorías conservan descripción, precio y enlac
   }
 });
 
-test('Los productos con una sola presentación se agregan sin variantes pendientes', () => {
-  for (const product of products.filter(
-    (product) => product.department !== 'ropa-y-accesorios',
-  )) {
+test('Los productos se agregan con la primera variante disponible', () => {
+  for (const product of products) {
     const item = quickSelection(product);
     assert.notEqual(item.size, 'Por elegir', product.name);
     assert.notEqual(item.color, 'Por elegir', product.name);
@@ -275,7 +273,7 @@ test('Los productos con una sola presentación se agregan sin variantes pendient
   assert.equal(
     quickSelection(products.find((product) => product.name === 'Polera Aurora'))
       .size,
-    'Por elegir',
+    's',
   );
 });
 
@@ -420,4 +418,33 @@ test('El carrito vacío presenta ilustración y acción para seguir comprando', 
   assert.match(html, /empty-illustration/);
   assert.match(html, /Seguir comprando/);
   assert.doesNotMatch(html, /Guardados para después/);
+});
+
+const { Layout } = await server.ssrLoadModule('/src/components/Layout.tsx');
+test('Carrito y panel lateral muestran variantes sin edición y permiten eliminar productos', () => {
+  const previous = cart.cart;
+  cart.cart = [
+    { name: 'Polera Aurora', price: 13990, qty: 1, size: 's', color: 'negro' },
+  ];
+  try {
+    for (const [Component, props] of [
+      [Cart, { openAuth: noop }],
+      [Layout, { layer: 'cart', setLayer: noop }],
+    ]) {
+      const html = render(Component, '/carrito', '*', props);
+      assert.ok(html.includes('<dt>Talla:</dt><dd>s</dd>'));
+      assert.ok(html.includes('<dt>Color:</dt><dd>negro</dd>'));
+      assert.match(html, /aria-label="Eliminar Polera Aurora"/);
+      assert.doesNotMatch(html, /<select/);
+      assert.doesNotMatch(html, />\s*Editar\s*</);
+      if (Component === Layout) {
+        assert.match(html, /recommendation-carousel/);
+        assert.ok(
+          html.indexOf('drawer-item') < html.indexOf('recommendation-carousel'),
+        );
+      }
+    }
+  } finally {
+    cart.cart = previous;
+  }
 });

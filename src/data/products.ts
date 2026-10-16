@@ -847,14 +847,8 @@ export const variantOptions = (value: string) =>
 
 export const quickSelection = (p: Product) => ({
   ...p,
-  size:
-    variantOptions(p.size).length === 1
-      ? variantOptions(p.size)[0]
-      : 'Por elegir',
-  color:
-    variantOptions(p.color).length === 1
-      ? variantOptions(p.color)[0]
-      : 'Por elegir',
+  size: variantOptions(p.size)[0],
+  color: variantOptions(p.color)[0],
 });
 
 export const productLabels = (item: { name: string }) =>

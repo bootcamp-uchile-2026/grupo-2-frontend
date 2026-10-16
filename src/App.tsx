@@ -27,6 +27,7 @@ import '@fontsource/poppins/latin-500.css';
 import '@fontsource/poppins/latin-600.css';
 import '@fontsource/poppins/latin-700.css';
 import './figma-refinements.css';
+import './ux-alignment.css';
 
 function LegacyRedirect({ to }: { to: string }) {
   const location = useLocation();
