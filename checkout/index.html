@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Resumen de compra | Buen Origen</title>
+        <link rel="stylesheet" href="../css/styles.css">
+        <script src="../js/main.js" defer></script>
+    </head>
+<body>
+    <div class="site">
+        <header class="site-header">
+    <a class="logo" href="../index.html">
+        <img src="../img/logo.png" alt="logo Buen Origen" height="45"> 
+    </a>
+            <nav class="main-nav">
+                    <a href="../productos/moda-natural/index.html">PRODUCTOS</a>
+                    <a href="../index.html#compromiso">¿QUIÉNES SOMOS?</a>
+                    <a href="../index.html#blog">BLOG</a>
+                    <a href="#">APP</a>
+                </nav><div class="header-actions">
+                    <button class="icon-button">⌕</button>
+                    <button class="icon-button">♥</button>
+                    <button class="icon-button user-trigger" aria-label="Mi cuenta">●</button>
+                    <button class="icon-button cart-trigger">🛒<span class="cart-badge">0</span>
+                    </button></div>
+        </header>
+                    
+<div class="breadcrumbs">
+    <a href="../index.html">Home</a> › 
+    <a href="../carrito/index.html">Carrito</a> 
+    › Resumen</div><div class="steps">
+        <div class="step"><i>1</i>
+            <span>Tu Carrito</span>
+        </div>
+        <div class="step active"><i>2</i>
+            <span>Resumen de tu compra</span>
+        </div>
+        <div class="step"><i>3</i>
+            <span>Confirmación de tu compra</span>
+        </div>
+    </div>
+<main class="checkout-page">
+    <h1>Resumen de tu compra</h1>
+    <div class="checkout-grid">
+        <div>
+            <section class="panel">
+                <h2>ENVÍO</h2>
+                <form class="form-grid" id="checkout-form">
+                    <select class="wide" required>
+                        <option value="">Comuna*</option>
+                        <option>Cerrillos</option>
+                        <option>Cerro Navia</option>
+                        <option>Conchalí</option>
+                        <option>El Bosque</option>
+                        <option>Estación Central</option>
+                        <option>Huechuraba</option>
+                        <option>Independencia</option>
+                        <option>La Cisterna</option>
+                        <option>La Florida</option>
+                        <option>La Granja</option>
+                        <option>La Pintana</option>
+                        <option>La Reina</option>
+                        <option>Las Condes</option>
+                        <option>Lo Barnechea</option>
+                        <option>Lo Espejo</option>
+                        <option>Lo Prado</option>
+                        <option>Macul</option>
+                        <option>Maipú</option>
+                        <option>Ñuñoa</option>
+                        <option>Pedro Aguirre Cerda</option>
+                        <option>Peñalolén</option>
+                        <option>Providencia</option>
+                        <option>Pudahuel</option>
+                        <option>Puente Alto</option>
+                        <option>Quilicura</option>
+                        <option>Quinta Normal</option>
+                        <option>Recoleta</option>
+                        <option>Renca</option>
+                        <option>San Bernardo</option>
+                        <option>San Joaquín</option>
+                        <option>San Miguel</option>
+                        <option>San Ramón</option>
+                        <option>Santiago</option>
+                        <option>Vitacura</option>
+                    </select>
+                <input class="wide" required placeholder="Calle*">
+                <input id="street-number" required placeholder="Número*">
+                <label class="no-number"><input id="no-street-number" type="checkbox"> Calle sin número</label>
+                <input placeholder="Depto/ofic/casa (opcional)">
+                <input placeholder="Código Postal (opcional)">
+                <textarea class="wide" rows="4" placeholder="Indicaciones para la entrega (opcional)"></textarea>
+            </form>
+        </section>
+        <section class="panel">
+            <h2>MÉTODO DE PAGO⌄</h2>
+            <label><input type="radio" name="pay" checked> Tarjeta de débito o crédito</label>
+                <br>
+                <label><input type="radio" name="pay"> Transferencia bancaria</label>
+            </section>
+        </div>
+        <aside>
+            <section class="panel"><h2>CARRITO</h2>
+                <p><span id="checkout-count">0</span> PRODUCTOS</p>
+            </section>
+            <section class="panel">
+                <h3>🏷 ¿Tienes un cupón de descuento?</h3>
+                <input style="width:100%;padding:9px" placeholder="Ingresa tu cupón">
+            </section>
+            <section class="panel">
+                <h2>RESUMEN DE LA COMPRA</h2>
+                <div class="summary-row"><span>SUBTOTAL</span>
+                    <strong id="checkout-subtotal">$0</strong>
+                </div>
+                <div class="summary-row"><span>CUPÓN DE DESCUENTO</span>
+                    <span>$0</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>TOTAL A PAGAR</span>
+                    <strong id="checkout-total">$0</strong>
+                </div>
+                <button class="btn confirm-order" style="width:100%;margin-top:15px">Confirmar y Pagar</button>
+            </section>
+        </aside>
+    </div>
+</main>
+<footer class="site-footer">
+    <div class="footer-brand">
+        <div class="placeholder"></div>
+        <i></i><i style="width:45%"></i></div>
+        <div><h3>Navegación</h3>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="productos/moda-natural/index.html">Productos</a></li>
+                <li><a href="#compromiso">Nosotros</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#">App</a></li>
+            </ul>
+        </div>
+        <div><h3>Políticas de Privacidad</h3></div>
+        <div><h3>Términos y Condiciones</h3></div>
+        <div><h3>Contacto</h3>
+            <div class="socials"><i></i><i></i><i></i><i></i></div></div>
+            <div class="copyright">© 2026 Buen Origen — Todos los derechos reservados</div>
+        </footer></div>
+        <div class="overlay"></div>
+        <div class="toast" role="status"></div>
+    </body>
+</html>
+
