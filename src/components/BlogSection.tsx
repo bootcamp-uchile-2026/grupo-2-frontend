@@ -53,10 +53,7 @@ export function BlogSection() {
           aria-label="Artículo anterior"
           onClick={() => move(-1)}
         >
-          <img
-            src="/img/figma/blog-imgIconixtoSolidArrowSquareLeft1.svg"
-            alt=""
-          />
+          <img src="/img/figma/entrepreneurs-imgFrame1507.svg" alt="" />
         </button>
         <div className="blog-cards">
           {visible.map((article) => (
@@ -85,7 +82,7 @@ export function BlogSection() {
           onClick={() => move(1)}
         >
           <img
-            src="/img/figma/blog-imgIconixtoSolidArrowSquareRight1.svg"
+            src="/img/figma/entrepreneurs-imgIconixtoSolidArrowSquareRight1.svg"
             alt=""
           />
         </button>

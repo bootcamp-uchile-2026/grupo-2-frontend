@@ -1,25 +1,13 @@
 import { useState } from 'react';
-import { HeaderIcon } from './HeaderIcon';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { categories } from '../../data/categories';
 import { useCart } from '../../store/cart';
-import { useAccount, demoAccountSummary } from '../../store/account';
 
-export function Header({
-  openCart,
-  openAuth,
-}: {
-  openCart: () => void;
-  openAuth: () => void;
-}) {
+export function Header({ openCart }: { openCart: () => void }) {
 
-  const { count, notify } = useCart();
-  const { user, logout } = useAccount();
-  const account = user ?? demoAccountSummary;
-  const [menu, setMenu] = useState(false);
+  const { count } = useCart();
   const [announcementOpen, setAnnouncementOpen] = useState(true);
   const [categoryMenu, setCategoryMenu] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
 
   return (
@@ -27,13 +15,13 @@ export function Header({
       {announcementOpen && (
         <div className="announcement-bar">
           <p>
-            Regístrate con nosotros, regalamos puntos verdes al iniciar sesión.
+            Regístrate con nosotros, ¡regalamos puntos verdes al iniciar sesión!
           </p>
           <button
             aria-label="Cerrar anuncio"
             onClick={() => setAnnouncementOpen(false)}
           >
-            ×
+            <img src="/img/figma/header-imgIconixtoSolidClose.svg" alt="" />
           </button>
         </div>
       )}
@@ -79,104 +67,59 @@ export function Header({
               ))}
             </div>
           </div>
-          <Link to="/productos/ropa-y-accesorios">Nuestros Productos</Link>
+          <Link to="/#emprendedores">Nuestros Productores</Link>
           <Link to="/#huella-verde">¿Qué es tu Huella Verde?</Link>
           <Link to="/#blog">Blog</Link>
         </nav>
         <div className="header-actions">
+          <form className="header-search" action="/buscar" role="search">
+            <input
+              name="q"
+              type="search"
+              aria-label="Buscar productos"
+              placeholder="Buscar productos"
+              required
+              defaultValue={new URLSearchParams(location.search).get('q') ?? ''}
+              key={location.key}
+            />
+            <button type="submit" className="icon-button" aria-label="Buscar">
+              <img src="/img/figma/header-imgIconixtoLinearSearch.svg" alt="" />
+            </button>
+          </form>
           <button
             type="button"
             className="icon-button"
-            aria-label="Buscar productos"
+            aria-label="Productos guardados"
             disabled
           >
-            <HeaderIcon name="search" />
+            <img src="/img/figma/header-imgIconixtoLinearHeart2.svg" alt="" />
           </button>
-          {!user && (
-            <button
-              type="button"
-              className="icon-button"
-              aria-label="Productos guardados"
-              disabled
-            >
-              <HeaderIcon name="heart" />
-            </button>
-          )}
-          <div className="account-menu-wrap">
-            <button
-              className="account-greeting-button"
-              aria-label={user ? 'Mi cuenta' : 'Iniciar sesión'}
-              aria-expanded={user ? menu : undefined}
-              aria-controls={user ? 'account-menu' : undefined}
-              onClick={() =>
-                user
-                  ? setMenu(!menu)
-                  : location.pathname === '/acceso'
-                    ? navigate('/acceso')
-                    : openAuth()
-              }
-            >
-              {`¡Hola ${account.name}!`}
-            </button>
-            {user && (
-              <>
-                {menu && (
-                  <>
-                    <button
-                      className="menu-dismiss"
-                      aria-label="Cerrar menú de cuenta"
-                      onClick={() => setMenu(false)}
-                    />
-                    <nav
-                      className="account-dropdown"
-                      id="account-menu"
-                      aria-label="Mi cuenta"
-                    >
-                      {[
-                        ['compras', 'Mis compras'],
-                        ['puntos-verdes', 'Puntos Verdes'],
-                        ['datos-personales', 'Datos personales'],
-                      ].map(([path, label]) => (
-                        <Link
-                          key={path}
-                          to={`/mi-cuenta/${path}`}
-                          onClick={() => setMenu(false)}
-                        >
-                          {label}
-                        </Link>
-                      ))}
-                      <button
-                        onClick={() => {
-
-                          logout();
-
-                          setMenu(false);
-
-                          notify('Cerraste sesión');
-
-                          navigate('/acceso');
-                        }}
-                      >
-                        Cerrar sesión
-                      </button>
-                    </nav>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-          <Link className="header-points" to="/mi-cuenta/puntos-verdes">
-            <HeaderIcon name="leaf" /> Tienes:{' '}
-            {account.points.toLocaleString('es-CL')} Puntos Verdes
-          </Link>
           <button
+            type="button"
             className="icon-button cart-trigger"
             aria-label="Carrito"
             onClick={openCart}
           >
-            <HeaderIcon name="cart" />
-            <span className="cart-badge">{count}</span>
+            <img src="/img/figma/header-imgIconixtoLinearCart.svg" alt="" />
+            {count > 0 && <span className="cart-badge">{count}</span>}
           </button>
+          <Link
+            className="icon-button account-trigger"
+            to="/acceso"
+            aria-label="Iniciar sesión"
+            aria-current={location.pathname === '/acceso' ? 'page' : undefined}
+          >
+            <img
+              className="account-default-icon"
+              src="/img/figma/header-imgIconixtoLinearUser.svg"
+              alt=""
+            />
+            <img
+              className="account-active-icon"
+              src="/img/figma/header-imgIconixtoSolidUser.svg"
+              alt=""
+            />
+          </Link>
         </div>
       </header>
     </div>

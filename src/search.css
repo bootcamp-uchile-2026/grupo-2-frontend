@@ -1,0 +1,137 @@
+.header-search {
+  display: flex;
+  align-items: center;
+  width: clamp(140px, 17vw, 240px);
+  border: 1px solid #929b8e;
+  border-radius: 22px;
+  background: white;
+  padding-left: 12px;
+}
+.header-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 8px 0;
+  font: inherit;
+  font-size: 12px;
+  color: #234332;
+}
+.header-search .icon-button {
+  flex-shrink: 0;
+}
+.header-search:focus-within {
+  outline: 2px solid #768153;
+  outline-offset: 2px;
+}
+.header-search input:focus {
+  outline: none;
+}
+.ux-empty {
+  text-align: center;
+  color: #234332;
+}
+.empty-illustration {
+  display: block;
+  width: 220px;
+  height: 200px;
+  margin: 0 auto 35px;
+}
+.ux-empty h1,
+.ux-empty h2 {
+  font:
+    700 clamp(26px, 4vw, 36px)/1.25 Georgia,
+    serif;
+  margin: 0 0 32px;
+}
+.cart-page:has(.cart-empty) {
+  max-width: none;
+  padding: 0;
+}
+.cart-empty {
+  padding: 64px 20px 55px;
+  min-height: 490px;
+}
+.cart-empty .btn {
+  border-radius: 24px;
+  background: #b96132;
+  color: white;
+  font-size: 13px;
+  gap: 14px;
+}
+.search-page {
+  max-width: 1160px;
+  margin: auto;
+  padding: 24px 5% 55px;
+}
+.search-heading {
+  font:
+    400 15px/1.5 Arial,
+    sans-serif;
+  text-align: center;
+  margin: 35px 0;
+  overflow-wrap: anywhere;
+}
+.search-empty {
+  padding: 40px 16px 30px;
+}
+.search-empty p {
+  color: #5f6358;
+  font-size: 14px;
+}
+.search-products {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.search-recommendations {
+  border-top: 1px solid #ccc9be;
+  padding: 32px 0;
+  text-align: center;
+}
+.search-recommendations > h2 {
+  font:
+    700 30px Georgia,
+    serif;
+  color: #234332;
+}
+.search-products .shop-card {
+  text-align: left;
+  min-width: 0;
+}
+.search-recommendations > .btn {
+  margin-top: 24px;
+}
+@media (max-width: 900px) {
+  .header-search {
+    width: 150px;
+  }
+}
+@media (max-width: 600px) {
+  .header-actions {
+    flex-wrap: wrap;
+  }
+  .header-search {
+    width: 140px;
+  }
+  .search-products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .cart-empty {
+    padding-top: 45px;
+    min-height: 440px;
+  }
+  .empty-illustration {
+    width: 190px;
+    height: 180px;
+  }
+}
+@media (max-width: 380px) {
+  .search-products {
+    grid-template-columns: 1fr;
+  }
+  .header-search {
+    width: 115px;
+  }
+}

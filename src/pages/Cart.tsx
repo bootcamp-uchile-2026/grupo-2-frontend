@@ -1,11 +1,12 @@
+import { CartOptions } from '../components/CartOptions';
 import { ProductImage } from '../components/ProductImage';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { money, productUrl, productLabels } from '../data/products';
+import { money, productLabels } from '../data/products';
 import { readItems, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import { Steps } from '../components/Steps';
-import { EmptyState } from '../components/EmptyState';
+import { EmptyIllustration } from '../components/EmptyIllustration';
 import type { CartItem } from '../store/cart';
 
 export function Cart({ openAuth }: { openAuth: () => void }) {
@@ -48,7 +49,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
       )
     ) {
       setError(
-        'Antes de pagar, usa “Editar” para seleccionar la talla y el color de tus productos.',
+        'Antes de pagar, vuelve a la ficha del producto para seleccionar talla y color.',
       );
 
       return;
@@ -62,10 +63,12 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
 
   return (
     <>
-      <div className="breadcrumbs">
-        <Link to="/">Home</Link> › Carrito
-      </div>
-      <Steps active={0} />
+      {cart.length > 0 && (
+        <div className="breadcrumbs">
+          <Link to="/">Home</Link> › Carrito
+        </div>
+      )}
+      {cart.length > 0 && <Steps active={0} />}
       <main className="cart-page">
         {cart.length ? (
           <>
@@ -77,24 +80,14 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             )}
             <div id="cart-lines">
               {cart.map((p, i) => (
-                <article
-                  className="cart-line"
-                  key={`${p.name}-${p.size}-${p.color}-${i}`}
-                >
+                <article className="cart-line" key={`${p.name}-${i}`}>
                   <ProductImage name={p.name} />
                   <div className="cart-line-info">
                     <h3>{p.name}</h3>
                     <p>Producto sustentable de producción local.</p>
-                    <strong>
-                      {productLabels(p).size}: {p.size}
-                      <br />
-                      {productLabels(p).color}: {p.color}
-                    </strong>
+                    <CartOptions index={i} />
                     <p>{money(p.price)}</p>
                     <div className="cart-item-actions">
-                      <Link className="btn" to={`${productUrl(p)}&edit=${i}`}>
-                        Editar
-                      </Link>
                       <button className="btn" onClick={() => save(i)}>
                         Guardar para después
                       </button>
@@ -103,10 +96,8 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                   <div className="quantity">
                     <button
                       aria-label={`Disminuir cantidad de ${p.name}`}
-                      onClick={() =>
-                        setCart(
-                          cart.map((x, index) =>
-                            index === i
+                      onClick={() => setCart(
+                          cart.map((x, index) => index === i
                               ? { ...x, qty: Math.max(1, x.qty - 1) }
                               : x,
                           ),
@@ -118,10 +109,8 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     <span>{p.qty}</span>
                     <button
                       aria-label={`Aumentar cantidad de ${p.name}`}
-                      onClick={() =>
-                        setCart(
-                          cart.map((x, index) =>
-                            index === i ? { ...x, qty: x.qty + 1 } : x,
+                      onClick={() => setCart(
+                          cart.map((x, index) => index === i ? { ...x, qty: x.qty + 1 } : x,
                           ),
                         )
                       }
@@ -142,7 +131,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                       notify(`${p.name} se eliminó del carrito`);
                     }}
                   >
-                    🗑
+                    Eliminar
                   </button>
                 </article>
               ))}
@@ -153,7 +142,17 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             <div className="cart-bottom">
               <div>
                 <h2>Huella verde de tu compra</h2>
-                <div className="cart-footprint" />
+                <div
+                  className="cart-footprint"
+                  aria-label={
+                    'Ganarás ' + Math.floor(total / 100) + ' Puntos Verdes'
+                  }
+                >
+                  <strong>{Math.floor(total / 100)} pts</strong>
+                  <span>
+                    <img src="/img/figma/home-leaf.svg" alt="" /> Puntos Verdes
+                  </span>
+                </div>
               </div>
               <div className="cart-buttons">
                 <Link className="btn" to="/productos/ropa-y-accesorios">
@@ -169,53 +168,57 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             </div>
           </>
         ) : (
-          <EmptyState
-            title="Tu carrito está vacío"
-            description="Encuentra un producto que te guste y agrégalo para comenzar tu compra."
-          />
+          <section className="ux-empty cart-empty">
+            <EmptyIllustration cart />
+            <h1>Ups...Tu carrito está vacío</h1>
+            <Link className="btn" to="/productos/ropa-y-accesorios">
+              Seguir comprando <span aria-hidden="true">🛒</span>
+            </Link>
+          </section>
         )}
-        <section className="saved-products" id="guardados">
-          <h2>Guardados para después</h2>
-          {saved.length ? (
-            saved.map((item, i) => (
-              <article className="panel saved-item" key={i}>
-                <ProductImage name={item.name} />
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>
-                    {productLabels(item).size}: {item.size} ·{' '}
-                    {productLabels(item).color}: {item.color}
-                  </p>
-                  <strong>{money(item.price)}</strong>
-                </div>
-                <div className="modal-actions">
-                  <button
-                    className="btn"
-                    onClick={() => {
+        {(cart.length > 0 || saved.length > 0) && (
+          <section className="saved-products" id="guardados">
+            <h2>Guardados para después</h2>
+            {saved.length ? (
+              saved.map((item, i) => (
+                <article className="panel saved-item" key={i}>
+                  <ProductImage name={item.name} />
+                  <div>
+                    <h3>{item.name}</h3>
+                    <p>
+                      {productLabels(item).size}: {item.size} ·{' '}
+                      {productLabels(item).color}: {item.color}
+                    </p>
+                    <strong>{money(item.price)}</strong>
+                  </div>
+                  <div className="modal-actions">
+                    <button
+                      className="btn"
+                      onClick={() => {
 
-                      add(item, item.qty);
+                        add(item, item.qty);
 
-                      updateSaved(saved.filter((_, index) => index !== i));
-                    }}
-                  >
-                    Volver al carrito
-                  </button>
-                  <button
-                    className="btn outline"
-                    onClick={() =>
-                      updateSaved(saved.filter((_, index) => index !== i))
-                    }
-                    aria-label={`Eliminar ${item.name} de guardados`}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </article>
-            ))
-          ) : (
-            <p>Los productos que guardes para después aparecerán aquí.</p>
-          )}
-        </section>
+                        updateSaved(saved.filter((_, index) => index !== i));
+                      }}
+                    >
+                      Volver al carrito
+                    </button>
+                    <button
+                      className="btn outline"
+                      onClick={() => updateSaved(saved.filter((_, index) => index !== i))
+                      }
+                      aria-label={`Eliminar ${item.name} de guardados`}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p>Los productos que guardes para después aparecerán aquí.</p>
+            )}
+          </section>
+        )}
       </main>
     </>
   );

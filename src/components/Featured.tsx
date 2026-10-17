@@ -1,13 +1,7 @@
 import { ProductCard } from './ProductCard';
 import { products } from '../data/products';
 
-export function Featured({
-  department = 'ropa-y-accesorios',
-  exclude = '',
-}: {
-  department?: string;
-  exclude?: string;
-}) {
+export function Featured({ department = 'ropa-y-accesorios', exclude = '', }: { department?: string; exclude?: string; }) {
 
   return (
     <div className="product-row" id="featured-products">

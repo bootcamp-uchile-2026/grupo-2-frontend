@@ -88,13 +88,7 @@ const account = {
   placeOrder: noop,
 };
 
-function render(
-  Component,
-  route,
-  routePattern = '*',
-  props = {},
-  accountValue = account,
-) {
+function render( Component, route, routePattern = '*', props = {}, accountValue = account, ) {
   return renderToString(
     createElement(
       MemoryRouter,
@@ -136,7 +130,7 @@ test('Carrito y checkout vacíos ofrecen volver al catálogo', () => {
   for (const Component of [Cart, Checkout]) {
     const html = render(Component, '/checkout', '*', { openAuth: noop });
     assert.match(html, /Tu carrito está vacío/);
-    assert.match(html, /Explorar productos/);
+    assert.match(html, /Explorar productos|Seguir comprando/);
     assert.doesNotMatch(html, /Confirmar y pagar/);
   }
 });
@@ -263,10 +257,8 @@ test('Las fichas de todas las categorías conservan descripción, precio y enlac
   }
 });
 
-test('Los productos con una sola presentación se agregan sin variantes pendientes', () => {
-  for (const product of products.filter(
-    (product) => product.department !== 'ropa-y-accesorios',
-  )) {
+test('Los productos se agregan con la primera variante disponible', () => {
+  for (const product of products) {
     const item = quickSelection(product);
     assert.notEqual(item.size, 'Por elegir', product.name);
     assert.notEqual(item.color, 'Por elegir', product.name);
@@ -275,7 +267,7 @@ test('Los productos con una sola presentación se agregan sin variantes pendient
   assert.equal(
     quickSelection(products.find((product) => product.name === 'Polera Aurora'))
       .size,
-    'Por elegir',
+    's',
   );
 });
 
@@ -325,4 +317,159 @@ test('Catálogo y ficha muestran la misma fotografía de un producto', () => {
   );
   assert.ok(catalogue.includes(`src="${source}"`));
   assert.ok(detail.includes(`src="${source}"`));
+});
+
+const { shippingSchema } = await server.ssrLoadModule(
+  '/src/pages/shippingSchema.ts',
+);
+const validShipping = {
+  firstName: ' Ana María Isabel ',
+  lastName: 'Pérez',
+  email: 'ana@example.com',
+  rut: '12.345.678-5',
+  phone: '+56 9 1234 5678',
+  commune: 'Santiago',
+  street: 'Los Aromos',
+  number: '120',
+  noNumber: false,
+  unit: '',
+  postalCode: '',
+  instructions: '',
+};
+
+test('Zod valida contacto y dirección y limpia espacios', () => {
+  const result = shippingSchema.safeParse(validShipping);
+  assert.equal(result.success, true);
+  assert.equal(result.data.firstName, 'Ana María Isabel');
+  for (const [field, value] of Object.entries({
+    firstName: '   ',
+    lastName: '',
+    email: 'correo',
+    rut: '12.345.678-9',
+    phone: '123',
+    commune: '',
+    street: ' ',
+    number: '',
+    postalCode: '123',
+  })) {
+    const invalid = shippingSchema.safeParse({
+      ...validShipping,
+      [field]: value,
+    });
+    assert.equal(invalid.success, false, field);
+    assert.ok(
+      invalid.error.issues.some((issue) => issue.path[0] === field),
+      field,
+    );
+  }
+});
+
+test('Zod exige al menos tres letras en el nombre', () => {
+  for (const firstName of ['', 'C', 'Ca', ' Ca ']) {
+    assert.equal(
+      shippingSchema.safeParse({ ...validShipping, firstName }).success,
+      false,
+    );
+  }
+  for (const firstName of ['Ana', 'Carlos', 'Carlos Ortiz']) {
+    assert.equal(
+      shippingSchema.safeParse({ ...validShipping, firstName }).success,
+      true,
+    );
+  }
+});
+
+test('El formulario comienza sin datos precargados', () => {
+  const html = render(ShippingForm, '/checkout', '*', {
+    confirm: noop,
+    noNumber: false,
+    setNoNumber: noop,
+  });
+  for (const name of ['firstName', 'lastName', 'email', 'rut', 'phone']) {
+    const input = html.match(
+      new RegExp(`<input[^>]*name="${name}"[^>]*>`),
+    )?.[0];
+    assert.ok(input);
+    assert.doesNotMatch(input, /value="[^"]+"/);
+    assert.match(input, /placeholder=/);
+  }
+});
+
+test('Zod permite dirección sin número y código postal opcional', () => {
+  assert.equal(
+    shippingSchema.safeParse({
+      ...validShipping,
+      number: '',
+      noNumber: true,
+      postalCode: '8320000',
+    }).success,
+    true,
+  );
+  assert.equal(
+    shippingSchema.safeParse({
+      ...validShipping,
+      phone: '912345678',
+      rut: '123456785',
+    }).success,
+    true,
+  );
+});
+
+const { Search } = await server.ssrLoadModule('/src/pages/Search.tsx');
+const { Header } = await server.ssrLoadModule(
+  '/src/components/Header/Header.tsx',
+);
+test('El buscador habilitado envía la consulta a resultados', () => {
+  const html = render(Header, '/', '*', { openCart: noop });
+  assert.match(html, /action="\/buscar"/);
+  assert.match(html, /name="q"/);
+  assert.match(html, /role="search"/);
+});
+test('Búsqueda sin resultados presenta ilustración y recomendaciones', () => {
+  const html = render(Search, '/buscar?q=producto-inexistente-xyz');
+  assert.match(html, /No encontramos tu producto/);
+  assert.match(html, /Productos Recomendados/);
+  assert.match(html, /Reseñas de nuestros clientes/);
+  assert.match(html, /empty-illustration/);
+});
+test('La búsqueda ignora tildes y devuelve fichas de productos', () => {
+  const html = render(Search, '/buscar?q=algodon');
+  assert.match(html, /Resultados de búsqueda/);
+  assert.match(html, /shop-card/);
+  assert.doesNotMatch(html, /No encontramos tu producto/);
+});
+test('El carrito vacío presenta ilustración y acción para seguir comprando', () => {
+  const html = render(Cart, '/carrito', '*', { openAuth: noop });
+  assert.match(html, /empty-illustration/);
+  assert.match(html, /Seguir comprando/);
+  assert.doesNotMatch(html, /Guardados para después/);
+});
+
+const { Layout } = await server.ssrLoadModule('/src/components/Layout.tsx');
+test('Carrito y panel lateral muestran variantes sin edición y permiten eliminar productos', () => {
+  const previous = cart.cart;
+  cart.cart = [
+    { name: 'Polera Aurora', price: 13990, qty: 1, size: 's', color: 'negro' },
+  ];
+  try {
+    for (const [Component, props] of [
+      [Cart, { openAuth: noop }],
+      [Layout, { layer: 'cart', setLayer: noop }],
+    ]) {
+      const html = render(Component, '/carrito', '*', props);
+      assert.ok(html.includes('<dt>Talla:</dt><dd>s</dd>'));
+      assert.ok(html.includes('<dt>Color:</dt><dd>negro</dd>'));
+      assert.match(html, /aria-label="Eliminar Polera Aurora"/);
+      assert.doesNotMatch(html, /<select/);
+      assert.doesNotMatch(html, />\s*Editar\s*</);
+      if (Component === Layout) {
+        assert.match(html, /recommendation-carousel/);
+        assert.ok(
+          html.indexOf('drawer-item') < html.indexOf('recommendation-carousel'),
+        );
+      }
+    }
+  } finally {
+    cart.cart = previous;
+  }
 });

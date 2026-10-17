@@ -28,9 +28,7 @@ export function Carousel({ kind, desktopCount, gap, children }: Props) {
   const max = Math.ceil(count / visible) - 1;
   const current = Math.min(page, max);
 
-  const move = (delta: number) =>
-    setPage((p) =>
-      offer
+  const move = (delta: number) => setPage((p) => offer
         ? (p + delta + count) % count
         : Math.max(0, Math.min(p + delta, max)),
     );
@@ -98,8 +96,7 @@ export function Carousel({ kind, desktopCount, gap, children }: Props) {
         return cloneElement(
           node,
           {},
-          Children.map(props.children as ReactNode, (dot, i) =>
-            isValidElement(dot)
+          Children.map(props.children as ReactNode, (dot, i) => isValidElement(dot)
               ? cloneElement(
                   dot as React.ReactElement<Record<string, unknown>>,
                   {

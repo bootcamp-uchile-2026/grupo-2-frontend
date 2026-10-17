@@ -1,16 +1,6 @@
 import { Link } from 'react-router-dom';
 
-export function EmptyState({
-  title,
-  description,
-  to = '/productos/ropa-y-accesorios',
-  action = 'Explorar productos',
-}: {
-  title: string;
-  description: string;
-  to?: string;
-  action?: string;
-}) {
+export function EmptyState({ title, description, to = '/productos/ropa-y-accesorios', action = 'Explorar productos', }: { title: string; description: string; to?: string; action?: string; }) {
 
   return (
     <section className="empty-state">

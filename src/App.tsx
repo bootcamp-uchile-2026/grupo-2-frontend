@@ -7,6 +7,8 @@ import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { Product } from './pages/Product';
 import { Cart } from './pages/Cart';
+import { Search } from './pages/Search';
+import './search.css';
 import { Checkout } from './pages/Checkout';
 import { Login, Recovery } from './pages/Access';
 import { Account } from './pages/Account';
@@ -19,6 +21,7 @@ import '@fontsource/poppins/latin-500.css';
 import '@fontsource/poppins/latin-600.css';
 import '@fontsource/poppins/latin-700.css';
 import './figma-refinements.css';
+import './ux-alignment.css';
 
 function LegacyRedirect({ to }: { to: string }) {
 
@@ -52,6 +55,7 @@ export function App() {
           <Routes>
             <Route element={<Layout layer={layer} setLayer={setLayer} />}>
               <Route path="/" element={<Home />} />
+              <Route path="/buscar" element={<Search />} />
               <Route path="/productos/:category" element={<CatalogRoute />} />
               <Route
                 path="/productos/:category/producto"

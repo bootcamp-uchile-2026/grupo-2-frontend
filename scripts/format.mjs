@@ -40,6 +40,76 @@ async function singleLineImports(text, filename) {
   return text;
 }
 
+function singleLineDeclarations(text, filename) {
+  const source = ts.createSourceFile(
+    filename,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const ranges = [];
+
+  function visit(node) {
+    if (ts.isFunctionLike(node) && node.body) {
+      ranges.push([node.getStart(source), node.body.getStart(source)]);
+    } else if (ts.isClassDeclaration(node) || ts.isClassExpression(node)) {
+      const brace = node
+        .getChildren(source)
+        .find((child) => child.kind === ts.SyntaxKind.OpenBraceToken);
+      if (brace) ranges.push([node.getStart(source), brace.getStart(source)]);
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(source);
+
+  const headers = ranges.filter(
+    ([start, end], index) => !ranges.some(
+        ([outerStart, outerEnd], other) => other !== index && outerStart <= start && outerEnd >= end,
+      ),
+  );
+
+  for (const [start, end] of headers.sort((a, b) => b[0] - a[0])) {
+    const header = text.slice(start, end);
+    const scanner = ts.createScanner(
+      ts.ScriptTarget.Latest,
+      false,
+      ts.LanguageVariant.Standard,
+      header,
+    );
+    let compact = '';
+    let hasLineComment = false;
+    let token;
+
+    while ((token = scanner.scan()) !== ts.SyntaxKind.EndOfFileToken) {
+      if (token === ts.SyntaxKind.SingleLineCommentTrivia)
+        hasLineComment = true;
+      compact +=
+        token === ts.SyntaxKind.WhitespaceTrivia ||
+        token === ts.SyntaxKind.NewLineTrivia
+          ? ' '
+          : scanner.getTokenText();
+    }
+
+    // Preserve comments and literal contents rather than changing their meaning.
+    if (hasLineComment || /[\r\n]/.test(compact)) continue;
+    const tokens = ts.createScanner(
+      ts.ScriptTarget.Latest,
+      false,
+      ts.LanguageVariant.Standard,
+      compact,
+    );
+    let normalized = '';
+    while ((token = tokens.scan()) !== ts.SyntaxKind.EndOfFileToken) {
+      normalized +=
+        token === ts.SyntaxKind.WhitespaceTrivia ? ' ' : tokens.getTokenText();
+    }
+    text = text.slice(0, start) + normalized.trimEnd() + ' ' + text.slice(end);
+  }
+
+  return text;
+}
+
 // Separate logical sections without changing expressions or executable code.
 function separateSections(text, filename) {
   const source = ts.createSourceFile(
@@ -50,12 +120,10 @@ function separateSections(text, filename) {
     filename.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
   const insertions = new Set();
-  const isMethod = (node) =>
-    ts.isFunctionDeclaration(node) ||
+  const isMethod = (node) => ts.isFunctionDeclaration(node) ||
     (ts.isVariableStatement(node) &&
       node.declarationList.declarations.some(
-        (declaration) =>
-          declaration.initializer &&
+        (declaration) => declaration.initializer &&
           (ts.isArrowFunction(declaration.initializer) ||
             ts.isFunctionExpression(declaration.initializer)),
       ));
@@ -140,6 +208,7 @@ async function formatDirectory(directory) {
 
     if (/\.(?:[cm]?[jt]sx?)$/.test(filename)) {
       formatted = await singleLineImports(formatted, filename);
+      formatted = singleLineDeclarations(formatted, filename);
     }
 
     if (original === formatted) continue;

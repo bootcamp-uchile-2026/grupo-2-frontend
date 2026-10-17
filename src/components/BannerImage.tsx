@@ -1,12 +1,6 @@
 import { bannerImages } from '../data/bannerImages';
 
-export function BannerImage({
-  category,
-  priority = false,
-}: {
-  category: string;
-  priority?: boolean;
-}) {
+export function BannerImage({ category, priority = false, }: { category: string; priority?: boolean; }) {
 
   const photo = bannerImages[category];
 

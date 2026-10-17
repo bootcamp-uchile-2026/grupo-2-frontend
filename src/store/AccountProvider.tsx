@@ -21,8 +21,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     return record ? publicProfile(record) : null;
   });
-  const [orders, setOrders] = useState<Order[]>(() =>
-    readStored('eco-orders', []),
+  const [orders, setOrders] = useState<Order[]>(() => readStored('eco-orders', []),
   );
 
   function startSession(record: AccountRecord) {
@@ -153,8 +152,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     const updated = { ...user, ...values, id: user.id, email: user.email };
     const accounts = readStored<AccountRecord[]>('eco-accounts', []).map(
-      (account) =>
-        account.id === user.id ? { ...account, ...updated } : account,
+      (account) => account.id === user.id ? { ...account, ...updated } : account,
     );
 
     localStorage.setItem('eco-accounts', JSON.stringify(accounts));
@@ -176,8 +174,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(
       'eco-accounts',
       JSON.stringify(
-        accounts.map((account) =>
-          account.id === id
+        accounts.map((account) => account.id === id
             ? { ...account, salt, passwordHash: hash }
             : account,
         ),
@@ -203,8 +200,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   async function recover(email: string, next: string) {
 
     const record = readStored<AccountRecord[]>('eco-accounts', []).find(
-      (account) =>
-        account.email === email.trim().toLowerCase() && !account.provider,
+      (account) => account.email === email.trim().toLowerCase() && !account.provider,
     );
 
     if (!record)

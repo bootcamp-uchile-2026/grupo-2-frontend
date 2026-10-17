@@ -1,15 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 
-export function Modal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-}) {
+export function Modal({ title, children, onClose, }: { title: string; children: ReactNode; onClose: () => void; }) {
 
   const ref = useRef<HTMLDivElement>(null);
 

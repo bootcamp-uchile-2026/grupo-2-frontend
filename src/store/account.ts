@@ -58,13 +58,11 @@ export async function passwordHash(password: string, salt: string) {
     256,
   );
 
-  return Array.from(new Uint8Array(bits), (byte) =>
-    byte.toString(16).padStart(2, '0'),
+  return Array.from(new Uint8Array(bits), (byte) => byte.toString(16).padStart(2, '0'),
   ).join('');
 }
 
-export const passwordValid = (password: string) =>
-  password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
+export const passwordValid = (password: string) => password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 
 export const demoAccountSummary = { name: 'Samanta', points: 30000 };
 

@@ -5,13 +5,7 @@ import { useAccount, demoCredentials, passwordValid } from '../store/account';
 import { useCart } from '../store/cart';
 import { Modal } from './Modal';
 
-export function AuthForm({
-  destination = '/mi-cuenta/compras',
-  guest = false,
-}: {
-  destination?: string;
-  guest?: boolean;
-}) {
+export function AuthForm({ destination = '/mi-cuenta/compras', guest = false, }: { destination?: string; guest?: boolean; }) {
 
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');

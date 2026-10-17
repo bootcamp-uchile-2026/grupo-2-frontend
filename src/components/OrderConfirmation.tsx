@@ -1,15 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Order } from '../store/account';
 
-export function OrderConfirmation({
-  order,
-  registered,
-  notify,
-}: {
-  order: Order;
-  registered: boolean;
-  notify: (message: string) => void;
-}) {
+export function OrderConfirmation({ order, registered, notify, }: { order: Order; registered: boolean; notify: (message: string) => void; }) {
 
   async function copyCode() {
 

@@ -5,11 +5,7 @@ import { money, productUrl, quickSelection } from '../data/products';
 import type { products } from '../data/products';
 import { useCart } from '../store/cart';
 
-export function ProductCard({
-  product,
-}: {
-  product: (typeof products)[number];
-}) {
+export function ProductCard({ product, }: { product: (typeof products)[number]; }) {
 
   const { add } = useCart();
 

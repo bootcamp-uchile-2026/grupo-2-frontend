@@ -831,34 +831,25 @@ export const products: Product[] = [
 
 export const money = (n: number) => '$' + n.toLocaleString('es-CL');
 
-export const productUrl = (p: { name: string; department?: string }) =>
-  '/productos/' +
+export const productUrl = (p: { name: string; department?: string }) => '/productos/' +
   (p.department ??
     products.find((product) => product.name === p.name)?.department ??
     'ropa-y-accesorios') +
   '/producto?name=' +
   encodeURIComponent(p.name);
 
-export const variantOptions = (value: string) =>
-  value
+export const variantOptions = (value: string) => value
     .split(',')
     .map((option) => option.trim())
     .filter(Boolean);
 
 export const quickSelection = (p: Product) => ({
   ...p,
-  size:
-    variantOptions(p.size).length === 1
-      ? variantOptions(p.size)[0]
-      : 'Por elegir',
-  color:
-    variantOptions(p.color).length === 1
-      ? variantOptions(p.color)[0]
-      : 'Por elegir',
+  size: variantOptions(p.size)[0],
+  color: variantOptions(p.color)[0],
 });
 
-export const productLabels = (item: { name: string }) =>
-  products.find((product) => product.name === item.name)?.department ===
+export const productLabels = (item: { name: string }) => products.find((product) => product.name === item.name)?.department ===
   'ropa-y-accesorios'
     ? { size: 'Talla', color: 'Color' }
     : { size: 'Presentación', color: 'Acabado' };
