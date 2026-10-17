@@ -1,131 +1,68 @@
-# Buen Origen — Frontend
+# Buen Origen
 
-Aplicación web desarrollada por el equipo Frontend del Grupo 2 para el **Hito 1 del Caso 2: EcoTienda**, en el Bootcamp de la Universidad de Chile.
+Prototipo React, TypeScript y Vite con navegación mediante React Router. `old/` conserva el desarrollo original como referencia.
 
-Buen Origen es un prototipo de comercio electrónico orientado al consumo consciente. Permite explorar productos sustentables, revisar sus atributos, administrar un carrito y completar un flujo simulado de compra.
+## Ejecutar y verificar
 
-## Estado del proyecto
-
-Versión frontend navegable construida con HTML, CSS y JavaScript. Para este hito se utilizan datos simulados y persistencia local; no requiere conexión con un backend.
-
-## Funcionalidades
-
-- Página de inicio con ofertas, productos populares, compromisos, emprendedores y artículos.
-- Catálogo de moda natural con categorías, filtros y ordenamiento.
-- Vista de detalle con color, talla, cantidad, huella verde, información y valoraciones.
-- Carrito lateral con recomendaciones de productos.
-- Carrito principal con edición, actualización de cantidades y eliminación de productos.
-- Persistencia del carrito mediante `localStorage`.
-- Acceso simulado o continuación de la compra como invitado.
-- Formulario de despacho, selección de método de pago y resumen de compra.
-- Confirmación de compra con código de despacho UUID y botón para copiarlo.
-
-## Tecnologías utilizadas
-
-- HTML5
-- CSS3
-- JavaScript
-- Web Storage API (`localStorage`)
-- Web Crypto API para generar el código de despacho
-
-No se utilizan frameworks ni dependencias externas.
-
-## Cómo ejecutar el proyecto
-
-No es necesario instalar dependencias ni ejecutar comandos.
-
-1. Descarga o clona el repositorio:
-
-   ```bash
-   git clone https://github.com/bootcamp-uchile-2026/grupo-2-frontend.git
-   ```
-
-2. Entra en la carpeta del proyecto.
-3. Abre el archivo `index.html` en un navegador web moderno.
-
-La navegación hacia las demás vistas se realiza desde la propia aplicación.
-
-> El carrito se guarda en el navegador. Para reiniciar sus datos se puede limpiar el almacenamiento local del sitio.
-
-## Estructura del proyecto
-
-```text
-grupo-2-frontend/
-├── index.html
-├── carrito/
-│   └── index.html
-├── checkout/
-│   └── index.html
-├── productos/
-│   └── moda-natural/
-│       ├── index.html
-│       └── producto/
-│           └── index.html
-├── css/
-│   └── styles.css
-├── js/
-│   └── main.js
-├── LICENSE
-└── README.md
+```sh
+npm install
+npm run dev
+npm run build
+npm run lint
+npm test
+npm run format:check
 ```
 
-## Vistas principales
+`npm run format` conserva cada import y cada firma de componente, función, método o clase en una sola línea, incluidos los parámetros y tipos de props. Separa con líneas en blanco los bloques de variables, efectos, métodos y retorno. Estas reglas permanentes están en `AGENTS.md`.
 
-| Vista | Archivo | Descripción |
-| --- | --- | --- |
-| Inicio | `index.html` | Presentación de la tienda y acceso al catálogo. |
-| Catálogo | `productos/moda-natural/index.html` | Productos, categorías, filtros y ordenamiento. |
-| Producto | `productos/moda-natural/producto/index.html` | Detalle, variantes, cantidad y agregado al carrito. |
-| Carrito | `carrito/index.html` | Gestión de productos e inicio del proceso de compra. |
-| Checkout | `checkout/index.html` | Despacho, pago, resumen y confirmación. |
+## Organización
 
-## Datos y comportamiento
+- `src/pages/`: inicio, catálogo, producto, carrito, checkout, acceso, recuperación y Mi cuenta.
+- `src/components/`: navegación, categorías, formularios, modales y componentes compartidos.
+- `src/store/`: carrito, cuentas de demostración y pedidos locales.
+- `src/data/`: catálogo simulado y categorías.
+- `src/index.css`: estilos originales y ajustes UX/UI.
+- `scripts/ux-ui.test.mjs`: pruebas de estados de error, validación y separación de pedidos por cuenta.
 
-Los productos, precios, reseñas y emprendedores son datos simulados para fines demostrativos. El flujo de autenticación y el pago también son simulaciones de interfaz: la aplicación no crea cuentas, no procesa pagos reales y no transmite información a servicios externos.
+## Rutas
 
-## Equipo Frontend
+- `/`
+- `/productos/:category`
+- `/productos/ropa-y-accesorios/producto?name=Polera%20Aurora`
+- `/carrito`
+- `/checkout`
+- `/acceso`
+- `/recuperar-cuenta`
+- `/mi-cuenta/compras`
+- `/mi-cuenta/compras/:orderId`
+- `/mi-cuenta/puntos-verdes`
+- `/mi-cuenta/datos-personales`
 
-- Danitza Jara — Desarrollo Frontend
-- Cristina Ortiz — Desarrollo Frontend
-- Carlos Ortiz — Desarrollo Frontend
+Las rutas anteriores de `moda-natural` y los enlaces HTML existentes redirigen a las rutas nuevas conservando parámetros y anclas. El hosting debe servir `index.html` al entrar directamente a una ruta React.
 
-## Metodología de trabajo
+## Ajustes UX/UI
 
-El equipo utiliza GitFlow como estrategia de ramas:
+Se implementaron los nombres de categorías y los cambios de las ocho capturas del documento: tarjetas de categorías en la portada, catálogo sin pestañas de subcategorías ni bloque de destacados, tarjetas con descripción y agregado rápido, carrito lateral con recomendaciones y una sola acción final, retorno al carrito desde checkout y confirmación de los datos antes del pago.
 
-- `main`: versiones estables y entregables.
-- `develop`: integración del trabajo del equipo.
-- `feature/*`: desarrollo de funcionalidades específicas.
-- `release/*`: preparación y validación de una entrega.
+El carrito permite guardar, restaurar, editar y eliminar productos. Un pago rechazado conserva los productos. Un pedido confirmado aparece en Mi cuenta con detalle, estado, seguimiento y ayuda. El flujo de compra funciona con un producto sin restringir las compras de varios productos.
 
-Flujo previsto para el Hito 1:
+## Cuenta y servicios de demostración
 
-```text
-feature/* → develop → release/* → main → tag
-```
+Cuenta de prueba:
 
-Repositorio: [bootcamp-uchile-2026/grupo-2-frontend](https://github.com/bootcamp-uchile-2026/grupo-2-frontend)
+- Correo: `samanta@buenorigen.cl`
+- Contraseña: `BuenOrigen2026`
 
-Tablero del proyecto: [GitHub Project del Grupo 2](https://github.com/orgs/bootcamp-uchile-2026/projects/2/views/2)
+El registro local valida la contraseña (8 caracteres como mínimo, una letra y un número). Las contraseñas se guardan como hashes PBKDF2 con sal. La recuperación usa el código de prueba `123456`; no se envía un correo real. Los botones Google, Apple y Facebook abren una confirmación de acceso con una cuenta ficticia, sin OAuth externo.
 
-## Diseño
+Los pagos, fechas de entrega, seguimiento, Puntos Verdes y solicitudes de ayuda son simulaciones. La regla local de puntos es 1 punto por cada $100 y 1 punto para canjear $1; no representa una política comercial definida. La iteración completa de Puntos Verdes queda fuera de esta entrega, según el documento. El cupón no aplica descuentos. Las ocho categorías tienen catálogo propio: 13 productos de ropa y accesorios y 6 productos por cada categoría restante (55 productos en total). Los precios, descripciones y presentaciones son datos ficticios para el prototipo. Los filtros, fichas, recomendaciones y opciones de compra se adaptan a la categoría.
 
-La implementación se basa en los wireframes del flujo comprador entregados por el equipo UX/UI. Estos contemplan la página de inicio, catálogo, filtros, ordenamiento, detalle de producto, carrito lateral, carrito principal, acceso o compra como invitado y checkout.
+Los datos se almacenan en este dispositivo: `eco-cart`, `eco-saved`, `eco-accounts`, `eco-orders` y `eco-help` en localStorage; `eco-session` en sessionStorage. Este prototipo no implementa autenticación, recuperación ni pagos aptos para producción. Esas funciones requieren backend, verificación real de identidad y proveedores externos.
 
-## Alcance y limitaciones del Hito 1
+## Fotografías del catálogo
 
-- El contenido y las imágenes son demostrativos.
-- No existe integración con una API o base de datos.
-- El inicio de sesión y la creación de cuenta no autentican usuarios reales.
-- El pago no realiza transacciones.
-- El seguimiento se representa mediante un código de despacho generado localmente.
+Los 55 productos usan fotografías reales e ilustrativas de Pexels, guardadas en `public/img/products/`. Las mismas fotos se reutilizan en tarjetas, fichas, recomendaciones, carrito y pedidos. No se depende de imágenes externas al navegar.
 
-## Entrega
+`scripts/product-photo-sources.json` registra la página original y la licencia de cada fotografía. `src/data/productImages.ts` relaciona las fotos con los productos. Para recuperar los archivos faltantes se puede ejecutar `node scripts/download-product-photos.mjs` y luego `npm run format`.
 
-La versión presentada debe corresponder al commit y al tag publicados en la rama `main`. El nombre del tag y el hash del commit se incorporarán cuando se genere la versión definitiva del Hito 1.
-
-Presentación programada para el **sábado 29 de agosto de 2026**.
-
-## Licencia
-
-Consulta el archivo [LICENSE](LICENSE) incluido en este repositorio.
+Las imágenes son referencias visuales del prototipo: no representan fotografías del inventario real ni implican respaldo de las personas o marcas que aparecen en ellas. Las condiciones de uso están en https://www.pexels.com/license/.

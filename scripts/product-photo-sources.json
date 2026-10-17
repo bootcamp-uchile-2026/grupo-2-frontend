@@ -1,0 +1,391 @@
+{
+  "license": "https://www.pexels.com/license/",
+  "note": "Fotografías ilustrativas para productos ficticios del prototipo. No implican respaldo de las personas, marcas o autores de las imágenes.",
+  "photos": [
+    {
+      "name": "Polera Aurora",
+      "id": 8532638,
+      "source": "https://www.pexels.com/photo/a-black-shirt-hanging-on-the-wall-8532638/",
+      "title": "A Black Shirt Hanging on the Wall",
+      "file": "/img/products/8532638.jpg"
+    },
+    {
+      "name": "Polera Ágata",
+      "id": 8148576,
+      "source": "https://www.pexels.com/photo/white-shirt-on-a-black-hanger-8148576/",
+      "title": "White Shirt on a Black Hanger",
+      "file": "/img/products/8148576.jpg"
+    },
+    {
+      "name": "Polera Bruno",
+      "id": 7319172,
+      "source": "https://www.pexels.com/photo/t-shirt-with-tag-hanging-on-counter-7319172/",
+      "title": "T shirt with tag hanging on counter",
+      "file": "/img/products/7319172.jpg"
+    },
+    {
+      "name": "Polera Nómade",
+      "id": 9594692,
+      "source": "https://www.pexels.com/photo/fashion-shopping-indoors-no-people-9594692/",
+      "title": "Minimalist Green T-shirt on Wooden Hanger",
+      "file": "/img/products/9594692.jpg"
+    },
+    {
+      "name": "Polera Boreal",
+      "id": 2112648,
+      "source": "https://www.pexels.com/photo/hanged-white-shirts-on-black-clothes-hangers-2112648/",
+      "title": "Hanged White Shirts on Black Clothes Hangers",
+      "file": "/img/products/2112648.jpg"
+    },
+    {
+      "name": "Polera Oceana",
+      "id": 10822396,
+      "source": "https://www.pexels.com/photo/white-t-shirts-hanging-on-clothes-rack-on-wall-10822396/",
+      "title": "White T-Shirts Hanging on Clothes Rack on Wall",
+      "file": "/img/products/10822396.jpg"
+    },
+    {
+      "name": "Pantalón Sonia",
+      "id": 14577586,
+      "source": "https://www.pexels.com/photo/set-of-clothes-on-white-fabric-14577586/",
+      "title": "Set of Clothes on White Fabric",
+      "file": "/img/products/14577586.jpg"
+    },
+    {
+      "name": "Pantalón Roble",
+      "id": 6046220,
+      "source": "https://www.pexels.com/photo/black-trousers-and-transparent-dress-on-hanger-placed-on-chandelier-6046220/",
+      "title": "Black trousers and transparent dress on hanger placed on chandelier",
+      "file": "/img/products/6046220.jpg"
+    },
+    {
+      "name": "Pantalón Arena",
+      "id": 14577601,
+      "source": "https://www.pexels.com/photo/clothes-on-marble-surface-14577601/",
+      "title": "Clothes on Marble Surface",
+      "file": "/img/products/14577601.jpg"
+    },
+    {
+      "name": "Polerón Inés",
+      "id": 9594694,
+      "source": "https://www.pexels.com/photo/a-hanged-sweatshirt-9594694/",
+      "title": "A Hanged Sweatshirt",
+      "file": "/img/products/9594694.jpg"
+    },
+    {
+      "name": "Polerón Austral",
+      "id": 9714441,
+      "source": "https://www.pexels.com/photo/hoodie-lying-in-a-dark-room-9714441/",
+      "title": "Hoodie Lying in a Dark Room",
+      "file": "/img/products/9714441.jpg"
+    },
+    {
+      "name": "Zapatilla Raíz",
+      "id": 2529148,
+      "source": "https://www.pexels.com/photo/photo-of-sneakers-on-white-background-2529148/",
+      "title": "Photo of Sneakers on White Background",
+      "file": "/img/products/2529148.jpg"
+    },
+    {
+      "name": "Tote Bag Lima",
+      "id": 4068314,
+      "source": "https://www.pexels.com/photo/person-holding-white-tote-bag-4068314/",
+      "title": "Cotton tote bag",
+      "file": "/img/products/4068314.jpg"
+    },
+    {
+      "name": "Granola Amanecer",
+      "id": 3872436,
+      "source": "https://www.pexels.com/photo/photo-of-granola-on-a-clear-bowl-3872436/",
+      "title": "Granola on a clear bowl",
+      "file": "/img/products/3872436.jpg"
+    },
+    {
+      "name": "Miel Valle Dorado",
+      "id": 4480158,
+      "source": "https://www.pexels.com/photo/jar-of-honey-4480158/",
+      "title": "Jar of honey",
+      "file": "/img/products/4480158.jpg"
+    },
+    {
+      "name": "Té de Hierbas del Sur",
+      "id": 29872760,
+      "source": "https://www.pexels.com/photo/dried-herbal-tea-on-bamboo-tray-29872760/",
+      "title": "Dried herbal tea on bamboo tray",
+      "file": "/img/products/29872760.jpg"
+    },
+    {
+      "name": "Mermelada Frutos del Bosque",
+      "id": 15209691,
+      "source": "https://www.pexels.com/photo/jam-in-jar-15209691/",
+      "title": "Jam in jar",
+      "file": "/img/products/15209691.jpg"
+    },
+    {
+      "name": "Mix de Frutos Secos Cordillera",
+      "id": 5507703,
+      "source": "https://www.pexels.com/photo/overturned-glass-jar-of-nuts-5507703/",
+      "title": "Overturned Glass Jar of Nuts",
+      "file": "/img/products/5507703.jpg"
+    },
+    {
+      "name": "Café Tostado Horizonte",
+      "id": 29527502,
+      "source": "https://www.pexels.com/photo/top-view-of-coffee-beans-in-a-white-cup-29527502/",
+      "title": "Coffee beans in a white cup",
+      "file": "/img/products/29527502.jpg"
+    },
+    {
+      "name": "Jabón Botánico de Avena",
+      "id": 16244099,
+      "source": "https://www.pexels.com/photo/handmade-natural-soap-bars-16244099/",
+      "title": "Handmade Natural Soap Bars",
+      "file": "/img/products/16244099.jpg"
+    },
+    {
+      "name": "Shampoo Sólido Brisa",
+      "id": 7262414,
+      "source": "https://www.pexels.com/photo/natural-skin-care-brush-with-shampoo-bar-7262414/",
+      "title": "Natural skin care brush with shampoo bar",
+      "file": "/img/products/7262414.jpg"
+    },
+    {
+      "name": "Bálsamo Labial Cacao",
+      "id": 35638285,
+      "source": "https://www.pexels.com/photo/lip-balm-in-denim-pocket-with-floral-charm-35638285/",
+      "title": "Lip Balm in Denim Pocket with Floral Charm",
+      "file": "/img/products/35638285.jpg"
+    },
+    {
+      "name": "Cepillo Dental de Bambú",
+      "id": 5420478,
+      "source": "https://www.pexels.com/photo/bamboo-toothbrush-on-sponge-5420478/",
+      "title": "Bamboo Toothbrush on Sponge",
+      "file": "/img/products/5420478.jpg"
+    },
+    {
+      "name": "Crema de Manos Caléndula",
+      "id": 16678665,
+      "source": "https://www.pexels.com/photo/hand-cream-in-plastic-tubes-16678665/",
+      "title": "Hand Cream in Plastic Tubes",
+      "file": "/img/products/16678665.jpg"
+    },
+    {
+      "name": "Esponja Vegetal Luffa",
+      "id": 5420584,
+      "source": "https://www.pexels.com/photo/natural-loofah-scrubbing-sponge-5420584/",
+      "title": "Natural Loofah Scrubbing Sponge",
+      "file": "/img/products/5420584.jpg"
+    },
+    {
+      "name": "Kit Huerto Aromático",
+      "id": 31416071,
+      "source": "https://www.pexels.com/photo/potted-seedlings-growing-indoors-31416071/",
+      "title": "Potted Seedlings Growing Indoors",
+      "file": "/img/products/31416071.jpg"
+    },
+    {
+      "name": "Macetero de Terracota Tierra",
+      "id": 17058191,
+      "source": "https://www.pexels.com/photo/flowerpots-with-soil-17058191/",
+      "title": "Flowerpots with Soil",
+      "file": "/img/products/17058191.jpg"
+    },
+    {
+      "name": "Semillas de Tomate Cherry",
+      "id": 7782901,
+      "source": "https://www.pexels.com/photo/seeds-in-pockets-and-green-watering-can-7782901/",
+      "title": "Seeds in Pockets and Green Watering Can",
+      "file": "/img/products/7782901.jpg"
+    },
+    {
+      "name": "Compost para Jardín",
+      "id": 11924687,
+      "source": "https://www.pexels.com/photo/compost-on-soil-11924687/",
+      "title": "Compost on Soil",
+      "file": "/img/products/11924687.jpg"
+    },
+    {
+      "name": "Regadera Brote",
+      "id": 9707349,
+      "source": "https://www.pexels.com/photo/close-up-shot-of-watering-can-and-potted-plants-on-white-surface-9707349/",
+      "title": "Close-Up Shot of Watering Can and Potted Plants on White Surface",
+      "file": "/img/products/9707349.jpg"
+    },
+    {
+      "name": "Pala de Jardín Roble",
+      "id": 9709229,
+      "source": "https://www.pexels.com/photo/man-hand-holding-shovel-with-soil-9709229/",
+      "title": "Man Hand Holding Shovel with Soil",
+      "file": "/img/products/9709229.jpg"
+    },
+    {
+      "name": "Limpiador Multiuso Cítrico",
+      "id": 4440523,
+      "source": "https://www.pexels.com/photo/spray-bottle-beside-a-bottle-of-cleaning-product-4440523/",
+      "title": "Spray Bottle Beside a Bottle of Cleaning Product",
+      "file": "/img/products/4440523.jpg"
+    },
+    {
+      "name": "Detergente Lavanda",
+      "id": 10566510,
+      "source": "https://www.pexels.com/photo/plastic-bottle-of-cleaning-product-in-laundry-basket-10566510/",
+      "title": "Plastic Bottle of Cleaning Product in Laundry Basket",
+      "file": "/img/products/10566510.jpg"
+    },
+    {
+      "name": "Cepillo para Loza Nativo",
+      "id": 5420583,
+      "source": "https://www.pexels.com/photo/brush-on-white-fabric-5420583/",
+      "title": "Brush on White Fabric",
+      "file": "/img/products/5420583.jpg"
+    },
+    {
+      "name": "Paños Reutilizables Hogar",
+      "id": 10182867,
+      "source": "https://www.pexels.com/photo/close-up-of-a-cleaning-rag-10182867/",
+      "title": "Close-up of a Cleaning Rag",
+      "file": "/img/products/10182867.jpg"
+    },
+    {
+      "name": "Jabón para Loza Sólido",
+      "id": 4194986,
+      "source": "https://www.pexels.com/photo/green-soap-beside-a-brush-4194986/",
+      "title": "Green Soap Beside a Brush",
+      "file": "/img/products/4194986.jpg"
+    },
+    {
+      "name": "Bolsas para Separar Residuos",
+      "id": 4068314,
+      "source": "https://www.pexels.com/photo/person-holding-white-tote-bag-4068314/",
+      "title": "Cotton tote bag",
+      "file": "/img/products/4068314.jpg"
+    },
+    {
+      "name": "Vela Bosque Nativo",
+      "id": 7694724,
+      "source": "https://www.pexels.com/photo/candles-placed-in-glass-jar-7694724/",
+      "title": "Candles placed in glass jar",
+      "file": "/img/products/7694724.jpg"
+    },
+    {
+      "name": "Difusor Bruma de Lavanda",
+      "id": 7795656,
+      "source": "https://www.pexels.com/photo/photo-of-a-reed-diffuser-7795656/",
+      "title": "Photo of a Reed Diffuser",
+      "file": "/img/products/7795656.jpg"
+    },
+    {
+      "name": "Saco de Semillas Calma",
+      "id": 23423806,
+      "source": "https://www.pexels.com/photo/rose-patterned-bag-filled-with-lavender-23423806/",
+      "title": "Rose-patterned Bag Filled with Lavender",
+      "file": "/img/products/23423806.jpg"
+    },
+    {
+      "name": "Incienso Jardín Sereno",
+      "id": 9904379,
+      "source": "https://www.pexels.com/photo/incense-sticks-in-close-up-shot-9904379/",
+      "title": "Incense Sticks in Close Up Shot",
+      "file": "/img/products/9904379.jpg"
+    },
+    {
+      "name": "Almohadilla de Ojos Pausa",
+      "id": 17345336,
+      "source": "https://www.pexels.com/photo/eye-mask-and-pink-tulips-on-a-table-17345336/",
+      "title": "Eye Mask and Pink Tulips on a Table",
+      "file": "/img/products/17345336.jpg"
+    },
+    {
+      "name": "Spray Ambiental Cítrico",
+      "id": 6167873,
+      "source": "https://www.pexels.com/photo/brown-glass-spray-bottle-on-marble-surface-6167873/",
+      "title": "Brown Glass Spray Bottle on Marble Surface",
+      "file": "/img/products/6167873.jpg"
+    },
+    {
+      "name": "Juguete de Cuerda Compañero",
+      "id": 18478445,
+      "source": "https://www.pexels.com/photo/dog-holding-a-rope-in-its-mouth-18478445/",
+      "title": "Dog Holding a Rope in its Mouth",
+      "file": "/img/products/18478445.jpg"
+    },
+    {
+      "name": "Plato Cerámico Huella",
+      "id": 8434635,
+      "source": "https://www.pexels.com/photo/dog-food-on-a-bowl-8434635/",
+      "title": "Dog Food on a Bowl",
+      "file": "/img/products/8434635.jpg"
+    },
+    {
+      "name": "Cama Nido para Mascotas",
+      "id": 2248516,
+      "source": "https://www.pexels.com/photo/dog-resting-on-pet-bed-2248516/",
+      "title": "Dog Resting on Pet Bed",
+      "file": "/img/products/2248516.jpg"
+    },
+    {
+      "name": "Collar Paseo Natural",
+      "id": 16621924,
+      "source": "https://www.pexels.com/photo/dog-with-collar-16621924/",
+      "title": "Dog with Collar",
+      "file": "/img/products/16621924.jpg"
+    },
+    {
+      "name": "Rascador de Cartón Gato",
+      "id": 15487957,
+      "source": "https://www.pexels.com/photo/cat-sitting-on-a-scratching-post-15487957/",
+      "title": "Cat Sitting on a Scratching Post",
+      "file": "/img/products/15487957.jpg"
+    },
+    {
+      "name": "Dispensador de Bolsas Paseo",
+      "id": 25753346,
+      "source": "https://www.pexels.com/photo/box-with-bags-on-wall-in-livigno-in-italy-25753346/",
+      "title": "Box with Bags on Wall in Livigno in Italy",
+      "file": "/img/products/25753346.jpg"
+    },
+    {
+      "name": "Jarrón Cerámico Tierra Viva",
+      "id": 8274442,
+      "source": "https://www.pexels.com/photo/photo-of-a-ceramic-vase-8274442/",
+      "title": "Photo of a Ceramic Vase",
+      "file": "/img/products/8274442.jpg"
+    },
+    {
+      "name": "Canasto de Fibras Raíz",
+      "id": 7232501,
+      "source": "https://www.pexels.com/photo/close-up-shot-of-a-wicker-basket-7232501/",
+      "title": "Close-Up Shot of a Wicker Basket",
+      "file": "/img/products/7232501.jpg"
+    },
+    {
+      "name": "Bandeja de Madera Oficio Sur",
+      "id": 6633448,
+      "source": "https://www.pexels.com/photo/wooden-tray-on-the-table-6633448/",
+      "title": "Wooden Tray on the Table",
+      "file": "/img/products/6633448.jpg"
+    },
+    {
+      "name": "Colgante de Macramé Nudo",
+      "id": 9889439,
+      "source": "https://www.pexels.com/photo/close-up-photo-of-a-potted-plant-hanging-on-a-macrame-9889439/",
+      "title": "Close-up Photo of a Potted Plant hanging on a Macrame",
+      "file": "/img/products/9889439.jpg"
+    },
+    {
+      "name": "Taza Artesanal Amanecer",
+      "id": 9261415,
+      "source": "https://www.pexels.com/photo/close-up-shot-of-a-ceramic-mug-9261415/",
+      "title": "Close-Up Shot of a Ceramic Mug",
+      "file": "/img/products/9261415.jpg"
+    },
+    {
+      "name": "Funda de Cojín Trama",
+      "id": 15758184,
+      "source": "https://www.pexels.com/photo/close-up-of-soft-pillow-15758184/",
+      "title": "Close up of Soft Pillow",
+      "file": "/img/products/15758184.jpg"
+    }
+  ]
+}

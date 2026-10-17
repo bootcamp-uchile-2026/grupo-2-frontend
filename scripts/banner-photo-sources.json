@@ -1,0 +1,61 @@
+{
+  "license": "https://www.pexels.com/license/",
+  "photos": [
+    {
+      "category": "alimentos",
+      "id": 5966154,
+      "source": "Recurso visual del proyecto",
+      "file": "/img/banners/alimentos-panoramico.png",
+      "generated": true
+    },
+    {
+      "category": "cuidado-personal",
+      "id": 12955707,
+      "source": "Recurso visual del proyecto",
+      "file": "/img/banners/cuidado-personal-panoramico.png",
+      "generated": true
+    },
+    {
+      "category": "huerto-y-jardineria",
+      "id": 7728884,
+      "source": "https://www.pexels.com/photo/7728884/",
+      "file": "/img/banners/huerto-y-jardineria.jpg",
+      "generated": false
+    },
+    {
+      "category": "limpieza-del-hogar",
+      "id": 5217899,
+      "source": "Recurso visual del proyecto",
+      "file": "/img/banners/limpieza-del-hogar-panoramico.png",
+      "generated": true
+    },
+    {
+      "category": "aromas-y-bienestar",
+      "id": 34478574,
+      "source": "Recurso visual del proyecto",
+      "file": "/img/banners/aromas-y-bienestar-panoramico.png",
+      "generated": true
+    },
+    {
+      "category": "ropa-y-accesorios",
+      "id": 8581033,
+      "source": "Recurso visual del proyecto",
+      "file": "/img/banners/ropa-y-accesorios-panoramico.png",
+      "generated": true
+    },
+    {
+      "category": "mascotas",
+      "id": 10642310,
+      "source": "https://www.pexels.com/photo/a-row-of-dogs-running-10642310/",
+      "file": "/img/banners/mascotas-real-panorama.jpg",
+      "generated": false
+    },
+    {
+      "category": "decoracion-y-artesania",
+      "id": 7218824,
+      "source": "Recurso visual del proyecto",
+      "file": "/img/banners/decoracion-y-artesania-panoramico.png",
+      "generated": true
+    }
+  ]
+}
