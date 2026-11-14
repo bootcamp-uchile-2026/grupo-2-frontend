@@ -62,7 +62,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok)
     throw new ApiError(
-      body?.error ?? 'Ocurrió un error inesperado.',
+      body?.error ??
+        (response.status >= 502
+          ? 'No pudimos conectar con el servidor. Inténtalo nuevamente.'
+          : 'Ocurrió un error inesperado.'),
       response.status,
     );
 

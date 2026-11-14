@@ -4,10 +4,10 @@
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { createApp } from 'json-server/lib/app.js';
 
 const file = new URL('./db.json', import.meta.url);
-const port = Number(process.env.API_PORT ?? 3000);
 
 const db = {
   data: JSON.parse(readFileSync(file, 'utf8')),
@@ -65,14 +65,34 @@ async function login(req, res) {
   send(res, 200, { accessToken: randomUUID(), user: profile });
 }
 
-createServer((req, res) => {
-  if (req.method === 'POST' && req.url?.split('?')[0] === '/login')
-    return void login(req, res);
+// Inicia la API; si el puerto ya está ocupado (p. ej. por `npm run api`) reutiliza esa instancia.
+export function startApi(port = Number(process.env.API_PORT ?? 3000)) {
+  const server = createServer((req, res) => {
+    if (req.method === 'POST' && req.url?.split('?')[0] === '/login')
+      return void login(req, res);
 
-  app.handler(req, res);
-}).listen(port, () => {
-  console.log(`API simulada en http://localhost:${port}`);
-  console.log('GET  /productos?_page=1&_per_page=12');
-  console.log('GET  /categorias?_page=1&_per_page=8');
-  console.log('POST /login { email, password }');
-});
+    app.handler(req, res);
+  });
+
+  return new Promise((resolve, reject) => {
+    server.once('error', (error) => {
+      if (error.code !== 'EADDRINUSE') return reject(error);
+
+      console.log(`API simulada ya activa en http://localhost:${port}`);
+
+      resolve(null);
+    });
+
+    server.listen(port, () => {
+      console.log(`API simulada en http://localhost:${port}`);
+      console.log('GET  /productos?_page=1&_per_page=12');
+      console.log('GET  /categorias?_page=1&_per_page=8');
+      console.log('POST /login { email, password }');
+
+      resolve(server);
+    });
+  });
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  await startApi();
