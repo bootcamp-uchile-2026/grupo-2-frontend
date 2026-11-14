@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { categories } from '../data/categories';
+import { getCategories } from '../api/client';
+import type { ApiCategory, Paginated } from '../api/client';
+import { Pagination } from './Pagination';
 
 const labels: Record<string, string> = {
   'cuidado-personal': 'Cuidado Personal',
@@ -10,13 +13,40 @@ const labels: Record<string, string> = {
   'decoracion-y-artesania': 'Decoración y Artesanía',
 };
 
+const perPage = 8;
+
 export function Categories() {
+
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<Paginated<ApiCategory> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+
+    const controller = new AbortController();
+
+    getCategories({ page, perPage }, controller.signal)
+      .then((data) => {
+
+        setResult(data);
+
+        setError('');
+      })
+      .catch((cause) => {
+
+        if (!controller.signal.aborted) setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [page]);
 
   return (
     <section className="section home-categories" id="categorias">
       <h2 className="section-title">¡Lo que necesitas, encuéntralo aquí!</h2>
+      {error && <p role="alert">{error}</p>}
+      {!result && !error && <p role="status">Cargando categorías…</p>}
       <div className="category-cards">
-        {categories.map((category, index) => (
+        {result?.data.map((category) => (
           <Link
             key={category.id}
             to={`/productos/${category.id}`}
@@ -24,7 +54,7 @@ export function Categories() {
           >
             <img
               className="category-cutout"
-              src={`/img/figma/categories-imgFrame${1415 + index}.png`}
+              src={category.image}
               alt=""
               width={1024}
               height={1024}
@@ -35,6 +65,14 @@ export function Categories() {
           </Link>
         ))}
       </div>
+      {result && (
+        <Pagination
+          page={page}
+          pages={result.pages}
+          onChange={setPage}
+          label="Páginas de categorías"
+        />
+      )}
     </section>
   );
 }

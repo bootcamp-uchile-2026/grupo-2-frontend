@@ -2,14 +2,34 @@ import { ProductCard } from '../components/ProductCard';
 import { BannerImage } from '../components/BannerImage';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { products } from '../data/products';
-import { categories } from '../data/categories';
 import { EmptyState } from '../components/EmptyState';
+import { Pagination } from '../components/Pagination';
+import { ApiError, getCategory, getProducts } from '../api/client';
+import type { ApiCategory, ApiProduct, Paginated, ProductQuery } from '../api/client';
+
+const perPage = 12;
+
+const sortParams: Record<string, ProductQuery['sort']> = {
+  asc: 'price',
+  desc: '-price',
+  new: '-id',
+};
 
 export function Catalog() {
 
   const { category = 'ropa-y-accesorios' } = useParams();
-  const selected = categories.find((c) => c.id === category);
+
+  // La key reinicia filtros, orden y página al cambiar de categoría.
+  return <CatalogView key={category} category={category} />;
+}
+
+function CatalogView({ category }: { category: string }) {
+
+  const [selected, setSelected] = useState<ApiCategory | null>(null);
+  const [missing, setMissing] = useState(false);
+  const [result, setResult] = useState<Paginated<ApiProduct> | null>(null);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
   const toolbar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,9 +70,59 @@ export function Catalog() {
   const [sort, setSort] = useState('featured');
   const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const departmentProducts = products.filter(
-    (product) => product.department === category,
-  );
+  useEffect(() => {
+
+    const controller = new AbortController();
+
+    getCategory(category, controller.signal)
+      .then(setSelected)
+      .catch((cause) => {
+
+        if (controller.signal.aborted) return;
+
+        if (cause instanceof ApiError && cause.status === 404) setMissing(true);
+        else setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [category]);
+
+  useEffect(() => {
+
+    const controller = new AbortController();
+
+    getProducts(
+      { page, perPage, department: category, sort: sortParams[sort], filters },
+      controller.signal,
+    )
+      .then((data) => {
+
+        setResult(data);
+
+        setError('');
+      })
+      .catch((cause) => {
+
+        if (!controller.signal.aborted) setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [category, page, sort, filters]);
+
+  function changeFilters(next: Record<string, string>) {
+
+    setFilters(next);
+
+    setPage(1);
+  }
+
+  function changePage(next: number) {
+
+    setPage(next);
+
+    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   const filterLabels: Record<string, string> = {
     category: 'Tipo de producto',
     gender: 'Género',
@@ -67,28 +137,12 @@ export function Catalog() {
   const options = Object.fromEntries(
     fields.map((field) => [
       field,
-      [
-        filterLabels[field],
-        ...new Set(
-          departmentProducts.flatMap((product) => String(product[field as keyof typeof product]).split(','),
-          ),
-        ),
-      ],
+      [filterLabels[field], ...(selected?.filters[field] ?? [])],
     ]),
   );
-  let visible = departmentProducts.filter((p) => Object.entries(filters).every(
-      ([key, value]) => value === 'all' ||
-        p[key as keyof typeof p].toString().split(',').includes(value),
-    ),
-  );
+  const visible = result?.data ?? [];
 
-  if (sort === 'asc') visible.sort((a, b) => a.price - b.price);
-
-  if (sort === 'desc') visible.sort((a, b) => b.price - a.price);
-
-  if (sort === 'new') visible = visible.toReversed();
-
-  if (!selected)
+  if (missing)
     return (
       <EmptyState
         title="Categoría no encontrada"
@@ -96,6 +150,15 @@ export function Catalog() {
         to="/#categorias"
         action="Ver categorías"
       />
+    );
+
+  if (!selected)
+    return (
+      <main className="catalog-page">
+        <p role={error ? 'alert' : 'status'}>
+          {error || 'Cargando categoría…'}
+        </p>
+      </main>
     );
 
   return (
@@ -129,7 +192,7 @@ export function Catalog() {
                         type="radio"
                         name={'filter-' + key}
                         checked={(filters[key] || 'all') === value}
-                        onChange={() => setFilters({ ...filters, [key]: value })
+                        onChange={() => changeFilters({ ...filters, [key]: value })
                         }
                       />
                       {value === 'all'
@@ -142,7 +205,7 @@ export function Catalog() {
                 </div>
               </details>
             ))}
-            <button className="clear-filters" onClick={() => setFilters({})}>
+            <button className="clear-filters" onClick={() => changeFilters({})}>
               Limpiar filtros
             </button>
           </div>
@@ -168,6 +231,8 @@ export function Catalog() {
 
                   setSort(value);
 
+                  setPage(1);
+
                   event.currentTarget
                     .closest('details')
                     ?.removeAttribute('open');
@@ -179,7 +244,7 @@ export function Catalog() {
           </div>
         </details>
         <span className="product-count" role="status">
-          {visible.length} productos
+          {result ? result.items + ' productos' : 'Cargando productos…'}
         </span>
       </div>
       <div className="catalog-layout">
@@ -196,14 +261,28 @@ export function Catalog() {
             {visible.map((p) => (
               <ProductCard key={p.name} product={p} />
             ))}
-            {!visible.length && (
+            {error && (
+              <div className="catalog-empty" role="alert">
+                <h2>No pudimos cargar los productos</h2>
+                <p>{error}</p>
+              </div>
+            )}
+            {result && !visible.length && (
               <div className="catalog-empty">
                 <h2>No encontramos productos</h2>
                 <p>Prueba con otros filtros para encontrar lo que buscas.</p>
-                <button className="btn" onClick={() => setFilters({})}>
+                <button className="btn" onClick={() => changeFilters({})}>
                   Limpiar filtros
                 </button>
               </div>
+            )}
+            {result && (
+              <Pagination
+                page={page}
+                pages={result.pages}
+                onChange={changePage}
+                label="Páginas de productos"
+              />
             )}
           </section>
         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { AccountContext, readStored, passwordHash, passwordValid, demoCredentials } from './account';
+import { AccountContext, readStored, passwordHash, passwordValid } from './account';
+import { ApiError, login as loginRequest } from '../api/client';
 import type { AccountRecord, Profile, Order } from './account';
 
 function publicProfile(record: AccountRecord): Profile {
@@ -37,44 +38,50 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     const normalized = email.trim().toLowerCase();
     const accounts = readStored<AccountRecord[]>('eco-accounts', []);
-    let record = accounts.find((account) => account.email === normalized);
+    const local = accounts.find((account) => account.email === normalized);
 
-    if (
-      !record &&
-      normalized === demoCredentials.email &&
-      password === demoCredentials.password
-    ) {
+    try {
+      const { accessToken, user: profile } = await loginRequest(
+        normalized,
+        password,
+      );
+
+      // Se guarda una copia local para que perfil, pedidos y cambio de contraseña sigan funcionando.
       const salt = crypto.randomUUID();
-
-      record = {
-        id: crypto.randomUUID(),
-        name: 'Samanta',
-        lastName: '',
+      // Se conserva el id y los cambios de perfil hechos en este navegador (pedidos y puntos dependen de ellos).
+      const record: AccountRecord = {
+        ...profile,
+        ...local,
+        id: local?.id ?? String(profile.id),
         email: normalized,
-        phone: '',
-        rut: '',
-        address: '',
-        points: 30000,
         salt,
         passwordHash: await passwordHash(password, salt),
       };
 
       localStorage.setItem(
         'eco-accounts',
-        JSON.stringify([...accounts, record]),
+        JSON.stringify([
+          ...accounts.filter((account) => account.email !== normalized),
+          record,
+        ]),
       );
+
+      sessionStorage.setItem('eco-token', accessToken);
+
+      return startSession(record);
+    } catch (cause) {
+      // El registro aún no existe en la API: las cuentas creadas en este navegador se validan localmente.
+      if (!(cause instanceof ApiError) || cause.status !== 401) throw cause;
+
+      if (
+        !local ||
+        local.provider ||
+        (await passwordHash(password, local.salt)) !== local.passwordHash
+      )
+        throw cause;
+
+      return startSession(local);
     }
-
-    if (
-      !record ||
-      record.provider ||
-      (await passwordHash(password, record.salt)) !== record.passwordHash
-    )
-      throw new Error(
-        'El correo o la contraseña son incorrectos. Inténtalo nuevamente.',
-      );
-
-    return startSession(record);
   }
 
   async function register(name: string, email: string, password: string) {
@@ -142,6 +149,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   function logout() {
 
     sessionStorage.removeItem('eco-session');
+
+    sessionStorage.removeItem('eco-token');
 
     setUser(null);
   }
