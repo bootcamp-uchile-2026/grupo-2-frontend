@@ -2,9 +2,9 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
 
-const apiPort = Number(process.env.API_PORT ?? 3000);
+const apiPort = Number(process.env.API_PORT ?? 3100);
 
-// Levanta la API simulada junto con `npm run dev`, salvo que se apunte a un backend real (VITE_API_URL).
+// Levanta la API simulada de server/index.mjs, que replica el contrato de grupo-2-backend.
 function mockApi(): Plugin {
 
   return {
@@ -12,9 +12,6 @@ function mockApi(): Plugin {
     apply: 'serve',
     async configureServer() {
 
-      if (process.env.VITE_API_URL) return;
-
-      // @ts-expect-error módulo JavaScript sin tipos
       const { startApi } = await import('./server/index.mjs');
 
       await startApi(apiPort);
@@ -26,7 +23,7 @@ function mockApi(): Plugin {
 export default defineConfig({
   plugins: [react(), mockApi()],
   server: {
-    // Redirige /api al servidor simulado para evitar problemas de CORS.
+    // Redirige /api a la API simulada para evitar problemas de CORS.
     proxy: {
       '/api': {
         target: `http://localhost:${apiPort}`,

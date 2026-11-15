@@ -226,80 +226,113 @@ test('Un carrito corrupto no impide abrir la aplicación', () => {
 const { products, productUrl, quickSelection } = await server.ssrLoadModule(
   '/src/data/products.ts',
 );
-const { categories } = await server.ssrLoadModule('/src/data/categories.ts');
+const { categories, categorySlug } = await server.ssrLoadModule(
+  '/src/data/categories.ts',
+);
 
 const { getProducts, getCategories, getCategory, login, ApiError } =
   await server.ssrLoadModule('/src/api/client.ts');
+const { CatalogProductCard } = await server.ssrLoadModule(
+  '/src/components/CatalogProductCard.tsx',
+);
 
-test('Cada categoría muestra exclusivamente sus propios productos', async () => {
-  for (const category of categories) {
-    const own = products.filter(
-      (product) => product.department === category.id,
-    );
+const { content: apiCategories } = await getCategories({ size: 100 });
+
+test('Cada categoría del backend corresponde a una ruta y muestra solo sus productos', async () => {
+  assert.deepEqual(
+    apiCategories.map((category) => categorySlug(category.name)).sort(),
+    categories.map((category) => category.id).sort(),
+  );
+  for (const category of apiCategories) {
+    const slug = categorySlug(category.name);
+    const own = products.filter((product) => product.department === slug);
     assert.ok(own.length >= 6, category.name);
-    const result = await getProducts({ department: category.id, perPage: 100 });
+    const result = await getProducts({ categoryId: category.id, size: 100 });
+    assert.ok(
+      result.content.every((product) => product.categoryId === category.id),
+    );
     assert.deepEqual(
-      result.data.map((product) => product.name).sort(),
+      result.content.map((product) => product.name).sort(),
       own.map((product) => product.name).sort(),
       category.name,
     );
   }
 });
 
-test('GET de productos pagina, filtra y ordena en el servidor', async () => {
-  const first = await getProducts({
-    department: 'ropa-y-accesorios',
-    perPage: 4,
-  });
-  assert.equal(first.data.length, 4);
-  assert.equal(first.pages, Math.ceil(first.items / 4));
-  assert.equal(first.prev, null);
+test('GET /products pagina desde 0 y ordena en el servidor', async () => {
+  const clothing = apiCategories.find(
+    (category) => categorySlug(category.name) === 'ropa-y-accesorios',
+  );
+  const first = await getProducts({ categoryId: clothing.id, size: 4 });
+  assert.equal(first.page, 0);
+  assert.equal(first.content.length, 4);
+  assert.equal(first.totalPages, Math.ceil(first.totalElements / 4));
   const second = await getProducts({
-    department: 'ropa-y-accesorios',
-    page: 2,
-    perPage: 4,
+    categoryId: clothing.id,
+    page: 1,
+    size: 4,
   });
-  assert.equal(second.prev, 1);
-  assert.ok(second.data.every((p) => !first.data.some((q) => q.id === p.id)));
+  assert.equal(second.page, 1);
+  assert.ok(
+    second.content.every((p) => !first.content.some((q) => q.id === p.id)),
+  );
   const sorted = await getProducts({
-    department: 'ropa-y-accesorios',
-    perPage: 100,
-    sort: 'price',
-    filters: { size: 'l', gender: 'all' },
+    categoryId: clothing.id,
+    size: 100,
+    sortBy: 'finalPrice',
+    sortDirection: 'DESC',
   });
-  assert.ok(sorted.data.every((p) => p.size.split(',').includes('l')));
   assert.deepEqual(
-    sorted.data.map((p) => p.price),
-    sorted.data.map((p) => p.price).toSorted((a, b) => a - b),
+    sorted.content.map((p) => p.finalPrice),
+    sorted.content.map((p) => p.finalPrice).toSorted((a, b) => b - a),
+  );
+  const found = await getProducts({ search: 'POLERA' });
+  assert.ok(found.totalElements > 0);
+  assert.ok(found.content.every((p) => /polera/i.test(p.name)));
+  await assert.rejects(
+    getProducts({ sortBy: 'color' }),
+    (error) => error instanceof ApiError && error.status === 400,
   );
 });
 
-test('GET de categorías pagina y entrega filtros de cada departamento', async () => {
-  const page = await getCategories({ page: 2, perPage: 3 });
-  assert.equal(page.items, categories.length);
+test('GET /categories pagina desde 0 y GET /categories/:id responde 404 si no existe', async () => {
+  const page = await getCategories({ page: 1, size: 3 });
+  assert.equal(page.totalElements, categories.length);
+  assert.equal(page.totalPages, Math.ceil(categories.length / 3));
   assert.deepEqual(
-    page.data.map((c) => c.id),
-    categories.slice(3, 6).map((c) => c.id),
+    page.content.map((c) => c.id),
+    apiCategories.slice(3, 6).map((c) => c.id),
   );
-  const clothing = await getCategory('ropa-y-accesorios');
-  assert.deepEqual(clothing.filters.size, ['s', 'm', 'l']);
+  const first = await getCategory(apiCategories[0].id);
+  assert.deepEqual(first, apiCategories[0]);
   await assert.rejects(
-    getCategory('no-existe'),
+    getCategory(9999),
     (error) => error instanceof ApiError && error.status === 404,
   );
+  await assert.rejects(
+    getCategories({ size: 500 }),
+    (error) => error instanceof ApiError && error.status === 400,
+  );
 });
 
-test('POST de inicio de sesión valida credenciales sin exponer la contraseña', async () => {
-  const { accessToken, user } = await login(
-    ' Samanta@BuenOrigen.cl ',
-    'BuenOrigen2026',
+test('POST /auth/login valida credenciales y entrega el JWT y el usuario', async () => {
+  const { access_token, user } = await login(
+    ' Maria@BuenOrigen.test ',
+    'CustomerTest2026!',
   );
-  assert.ok(accessToken);
-  assert.equal(user.name, 'Samanta');
+  assert.ok(access_token);
+  assert.equal(user.firstName, 'María');
+  assert.equal(user.role, 'CUSTOMER');
   assert.equal(user.password, undefined);
   await assert.rejects(
-    login('samanta@buenorigen.cl', 'incorrecta1'),
-    (error) => error instanceof ApiError && error.status === 401,
+    login('maria@buenorigen.test', 'incorrecta1'),
+    (error) => error instanceof ApiError &&
+      error.status === 401 &&
+      /incorrectos/.test(error.message),
+  );
+  await assert.rejects(
+    login('no-es-un-correo', 'algo'),
+    (error) => error instanceof ApiError && error.status === 400,
   );
 });
 
@@ -368,19 +401,16 @@ test('Catálogo y ficha muestran la misma fotografía de un producto', async () 
     (product) => product.name === 'Granola Amanecer',
   );
   const source = productImages[product.name].src;
-  const catalogue = await getProducts({
-    department: 'alimentos',
-    perPage: 100,
+  const { content } = await getProducts({ search: product.name });
+  const card = render(CatalogProductCard, '/', '*', {
+    product: content.find((item) => item.name === product.name),
   });
   const detail = render(
     Product,
     productUrl(product),
     '/productos/:category/producto',
   );
-  assert.equal(
-    catalogue.data.find((item) => item.name === product.name)?.image,
-    source,
-  );
+  assert.ok(card.includes(`src="${source}"`));
   assert.ok(detail.includes(`src="${source}"`));
 });
 

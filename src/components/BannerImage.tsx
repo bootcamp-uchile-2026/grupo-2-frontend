@@ -4,6 +4,8 @@ export function BannerImage({ category, priority = false, }: { category: string;
 
   const photo = bannerImages[category];
 
+  if (!photo) return null;
+
   return (
     <img
       className="banner-image"

@@ -1,32 +1,84 @@
-import type { Product } from '../data/products';
-import type { Profile } from '../store/account';
-
-// En desarrollo Vite redirige /api al servidor simulado (ver vite.config.ts).
-// Cuando exista el backend real basta con definir VITE_API_URL.
+// Cliente de la API. Por ahora consume la API simulada (server/index.mjs), que replica el contrato
+// de grupo-2-backend: GET /products, GET /categories, GET /categories/:categoryId y POST /auth/login.
+// Vite redirige /api a la API simulada (ver vite.config.ts); las pruebas usan VITE_API_URL.
 const API_URL = import.meta.env.VITE_API_URL ?? '/api';
 
-export type Paginated<T> = {
-  first: number;
-  prev: number | null;
-  next: number | null;
-  last: number;
-  pages: number;
-  items: number;
-  data: T[];
+export type SortDirection = 'ASC' | 'DESC';
+
+// Respuesta paginada del backend (page comienza en 0).
+export type Page<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  sortBy: string;
+  sortDirection: SortDirection;
 };
 
-export type ApiProduct = Product & { id: number; image: string | null };
+export type PageQuery<SortField extends string = string> = {
+  page?: number;
+  size?: number;
+  sortBy?: SortField;
+  sortDirection?: SortDirection;
+};
 
-export type ApiCategory = {
-  id: string;
+// ProductSummaryDto
+export type ApiProduct = {
+  id: number;
   name: string;
-  icon: string;
-  image: string;
-  productCount: number;
-  filters: Record<string, string[]>;
+  producerId: number;
+  producerName: string;
+  categoryId: number;
+  price: number;
+  offerPrice: number | null;
+  finalPrice: number;
+  discountPercentage: number;
+  stock: number;
+  available: boolean;
+  co2Avoided: number;
+  greenPoints: number;
+  rating: number | null;
+  reviewCount: number;
+  primaryImageFileId: string | null;
 };
 
-export type LoginResponse = { accessToken: string; user: Profile };
+// CategoryDto
+export type ApiCategory = {
+  id: number;
+  name: string;
+  description: string | null;
+};
+
+export type UserRole = 'ADMIN' | 'CUSTOMER' | 'PRODUCER';
+
+// LoginResponseDto
+export type LoginResponse = {
+  access_token: string;
+  user: {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string | null;
+    role: UserRole;
+    customerId: number | null;
+    producerId: number | null;
+  };
+};
+
+export type ProductSortField =
+  'id' | 'name' | 'price' | 'finalPrice' | 'stock' | 'co2Avoided' | 'createdAt';
+
+export type ProductQuery = PageQuery<ProductSortField> & {
+  search?: string;
+  categoryId?: number;
+  producerId?: number;
+};
+
+export type CategoryQuery = PageQuery<'id' | 'name' | 'description'>;
+
+const connectionError =
+  'No pudimos conectar con el servidor. Inténtalo nuevamente.';
 
 export class ApiError extends Error {
   status: number;
@@ -39,6 +91,18 @@ export class ApiError extends Error {
   }
 }
 
+// NestJS responde { statusCode, message, error }, donde message puede ser un arreglo de validaciones.
+function errorMessage(body: unknown, status: number) {
+
+  const message = (body as { message?: unknown } | null)?.message;
+
+  if (Array.isArray(message)) return message.join('. ');
+
+  if (typeof message === 'string' && message) return message;
+
+  return status >= 502 ? connectionError : 'Ocurrió un error inesperado.';
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   let response: Response;
@@ -46,28 +110,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(API_URL + path, {
       ...init,
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
+      headers: {
+        Accept: 'application/json',
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init?.headers,
+      },
     });
   } catch (cause) {
     if (cause instanceof DOMException && cause.name === 'AbortError')
       throw cause;
 
-    throw new ApiError(
-      'No pudimos conectar con el servidor. Inténtalo nuevamente.',
-      0,
-    );
+    throw new ApiError(connectionError, 0);
   }
 
   const body = await response.json().catch(() => null);
 
   if (!response.ok)
-    throw new ApiError(
-      body?.error ??
-        (response.status >= 502
-          ? 'No pudimos conectar con el servidor. Inténtalo nuevamente.'
-          : 'Ocurrió un error inesperado.'),
-      response.status,
-    );
+    throw new ApiError(errorMessage(body, response.status), response.status);
 
   return body as T;
 }
@@ -82,60 +141,54 @@ function query(params: Record<string, string | number | undefined>) {
   return search.toString();
 }
 
-export type ProductQuery = {
-  page?: number;
-  perPage?: number;
-  department?: string;
-  sort?: 'price' | '-price' | '-id';
-  filters?: Record<string, string>;
-};
+export function getProducts( { page = 0, size = 12, sortBy, sortDirection, search, categoryId, producerId, }: ProductQuery = {}, signal?: AbortSignal, ) {
 
-// Campos que guardan varias opciones separadas por coma ("s,m,l").
-const listFields = new Set(['size', 'color']);
-
-export function getProducts( { page = 1, perPage = 12, department, sort, filters = {} }: ProductQuery, signal?: AbortSignal, ) {
-
-  const where = Object.fromEntries(
-    Object.entries(filters)
-      .filter(([, value]) => value && value !== 'all')
-      .map(([key, value]) => [
-        listFields.has(key) ? key + ':contains' : key,
-        value,
-      ]),
-  );
-
-  return request<Paginated<ApiProduct>>(
-    '/productos?' +
+  return request<Page<ApiProduct>>(
+    '/products?' +
       query({
-        department,
-        _sort: sort,
-        _page: page,
-        _per_page: perPage,
-        ...where,
+        page,
+        size,
+        sortBy,
+        sortDirection,
+        search: search?.trim(),
+        categoryId,
+        producerId,
       }),
     { signal },
   );
 }
 
-export function getCategories( { page = 1, perPage = 8 }: { page?: number; perPage?: number } = {}, signal?: AbortSignal, ) {
+export function getCategories( { page = 0, size = 20, sortBy, sortDirection }: CategoryQuery = {}, signal?: AbortSignal, ) {
 
-  return request<Paginated<ApiCategory>>(
-    '/categorias?' + query({ _page: page, _per_page: perPage }),
+  return request<Page<ApiCategory>>(
+    '/categories?' + query({ page, size, sortBy, sortDirection }),
     { signal },
   );
 }
 
-export function getCategory(id: string, signal?: AbortSignal) {
+export function getCategory(id: number, signal?: AbortSignal) {
 
-  return request<ApiCategory>('/categorias/' + encodeURIComponent(id), {
-    signal,
-  });
+  return request<ApiCategory>('/categories/' + id, { signal });
 }
 
-export function login(email: string, password: string) {
+export async function login(email: string, password: string) {
 
-  return request<LoginResponse>('/login', {
-    method: 'POST',
-    body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-  });
+  try {
+    return await request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+    });
+  } catch (cause) {
+    // 400 (formato inválido) y 401 (credenciales o cuenta desactivada) se muestran con un mismo mensaje.
+    if (
+      cause instanceof ApiError &&
+      (cause.status === 400 || cause.status === 401)
+    )
+      throw new ApiError(
+        'El correo o la contraseña son incorrectos. Inténtalo nuevamente.',
+        cause.status,
+      );
+
+    throw cause;
+  }
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getCategories } from '../api/client';
-import type { ApiCategory, Paginated } from '../api/client';
+import type { ApiCategory, Page } from '../api/client';
+import { categoryImages, categorySlug } from '../data/categories';
 import { Pagination } from './Pagination';
 
 const labels: Record<string, string> = {
@@ -13,19 +14,23 @@ const labels: Record<string, string> = {
   'decoracion-y-artesania': 'Decoración y Artesanía',
 };
 
-const perPage = 8;
+const size = 8;
 
+// La página es base 0, igual que en el backend.
 export function Categories() {
 
-  const [page, setPage] = useState(1);
-  const [result, setResult] = useState<Paginated<ApiCategory> | null>(null);
+  const [page, setPage] = useState(0);
+  const [result, setResult] = useState<Page<ApiCategory> | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
 
     const controller = new AbortController();
 
-    getCategories({ page, perPage }, controller.signal)
+    getCategories(
+      { page, size, sortBy: 'id', sortDirection: 'ASC' },
+      controller.signal,
+    )
       .then((data) => {
 
         setResult(data);
@@ -46,30 +51,37 @@ export function Categories() {
       {error && <p role="alert">{error}</p>}
       {!result && !error && <p role="status">Cargando categorías…</p>}
       <div className="category-cards">
-        {result?.data.map((category) => (
-          <Link
-            key={category.id}
-            to={`/productos/${category.id}`}
-            className="category-card"
-          >
-            <img
-              className="category-cutout"
-              src={category.image}
-              alt=""
-              width={1024}
-              height={1024}
-              loading="lazy"
-              decoding="async"
-            />
-            <span>{labels[category.id] ?? category.name}</span>
-          </Link>
-        ))}
+        {result?.content.map((category) => {
+
+          const slug = categorySlug(category.name);
+
+          return (
+            <Link
+              key={category.id}
+              to={`/productos/${slug}`}
+              className="category-card"
+            >
+              {categoryImages[slug] && (
+                <img
+                  className="category-cutout"
+                  src={categoryImages[slug]}
+                  alt=""
+                  width={1024}
+                  height={1024}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <span>{labels[slug] ?? category.name}</span>
+            </Link>
+          );
+        })}
       </div>
       {result && (
         <Pagination
-          page={page}
-          pages={result.pages}
-          onChange={setPage}
+          page={page + 1}
+          pages={result.totalPages}
+          onChange={(next) => setPage(next - 1)}
           label="Páginas de categorías"
         />
       )}

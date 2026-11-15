@@ -41,19 +41,25 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const local = accounts.find((account) => account.email === normalized);
 
     try {
-      const { accessToken, user: profile } = await loginRequest(
-        normalized,
-        password,
-      );
+      const { access_token: accessToken, user: authenticated } =
+        await loginRequest(normalized, password);
 
       // Se guarda una copia local para que perfil, pedidos y cambio de contraseña sigan funcionando.
       const salt = crypto.randomUUID();
       // Se conserva el id y los cambios de perfil hechos en este navegador (pedidos y puntos dependen de ellos).
       const record: AccountRecord = {
-        ...profile,
+        name: authenticated.firstName,
+        lastName: authenticated.lastName ?? '',
+        phone: '',
+        rut: '',
+        address: '',
+        points: 0,
         ...local,
-        id: local?.id ?? String(profile.id),
+        id: local?.id ?? String(authenticated.id),
         email: normalized,
+        role: authenticated.role,
+        customerId: authenticated.customerId,
+        producerId: authenticated.producerId,
         salt,
         passwordHash: await passwordHash(password, salt),
       };

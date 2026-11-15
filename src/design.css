@@ -209,7 +209,8 @@
   flex-direction: column;
   padding-bottom: 12px;
 }
-.shop-card > a {
+.shop-card > a,
+.shop-card > .card-summary {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -240,6 +241,18 @@
   margin: auto 13px 12px;
   font-size: 14px;
   font-weight: 700;
+}
+.shop-card .card-price-before {
+  font-weight: 400;
+  color: #8c9089;
+}
+.shop-card .card-discount {
+  font-size: 11px;
+  color: #3f6b4a;
+}
+.shop-card .quick-add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .shop-card .card-bottom {
   padding: 0 13px;
