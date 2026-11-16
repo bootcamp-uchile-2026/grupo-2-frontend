@@ -11,6 +11,10 @@ export type Profile = {
   address: string;
   points: number;
   provider?: string;
+  // Datos entregados por POST /auth/login; los usarán carrito, favoritos y pedidos.
+  role?: 'ADMIN' | 'CUSTOMER' | 'PRODUCER';
+  customerId?: number | null;
+  producerId?: number | null;
 };
 
 export type AccountRecord = Profile & { passwordHash: string; salt: string };
@@ -66,9 +70,10 @@ export const passwordValid = (password: string) => password.length >= 8 && /[A-Z
 
 export const demoAccountSummary = { name: 'Samanta', points: 30000 };
 
+// Cliente de prueba creado por las migraciones de grupo-2-backend (también existe en la API simulada).
 export const demoCredentials = {
-  email: 'samanta@buenorigen.cl',
-  password: 'BuenOrigen2026',
+  email: 'maria@buenorigen.test',
+  password: 'CustomerTest2026!',
 };
 
 export const AccountContext = createContext<null | {

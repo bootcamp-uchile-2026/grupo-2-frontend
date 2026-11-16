@@ -1,15 +1,42 @@
-import { ProductCard } from '../components/ProductCard';
+import { CatalogProductCard } from '../components/CatalogProductCard';
 import { BannerImage } from '../components/BannerImage';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { products } from '../data/products';
-import { categories } from '../data/categories';
 import { EmptyState } from '../components/EmptyState';
+import { Pagination } from '../components/Pagination';
+import { getCategories, getProducts } from '../api/client';
+import type { ApiCategory, ApiProduct, Page, ProductQuery } from '../api/client';
+import { categorySlug } from '../data/categories';
+
+const size = 12;
+
+// Campos de ordenamiento autorizados por GET /products.
+const sortParams: Record<
+  string,
+  Pick<ProductQuery, 'sortBy' | 'sortDirection'>
+> = {
+  asc: { sortBy: 'finalPrice', sortDirection: 'ASC' },
+  desc: { sortBy: 'finalPrice', sortDirection: 'DESC' },
+  featured: { sortBy: 'id', sortDirection: 'ASC' },
+  new: { sortBy: 'createdAt', sortDirection: 'DESC' },
+};
 
 export function Catalog() {
 
   const { category = 'ropa-y-accesorios' } = useParams();
-  const selected = categories.find((c) => c.id === category);
+
+  // La key reinicia filtros, orden y página al cambiar de categoría.
+  return <CatalogView key={category} category={category} />;
+}
+
+function CatalogView({ category }: { category: string }) {
+
+  const [selected, setSelected] = useState<ApiCategory | null>(null);
+  const [missing, setMissing] = useState(false);
+  const [result, setResult] = useState<Page<ApiProduct> | null>(null);
+  const [error, setError] = useState('');
+  // Página base 0, igual que el backend.
+  const [page, setPage] = useState(0);
   const toolbar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,47 +75,66 @@ export function Catalog() {
   }, []);
 
   const [sort, setSort] = useState('featured');
-  const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const departmentProducts = products.filter(
-    (product) => product.department === category,
-  );
-  const filterLabels: Record<string, string> = {
-    category: 'Tipo de producto',
-    gender: 'Género',
-    size: category === 'ropa-y-accesorios' ? 'Talla' : 'Presentación',
-    color: 'Color',
-    material: 'Material',
-  };
-  const fields =
-    category === 'ropa-y-accesorios'
-      ? ['category', 'gender', 'size', 'color', 'material']
-      : ['category', 'size', 'material'];
-  const options = Object.fromEntries(
-    fields.map((field) => [
-      field,
-      [
-        filterLabels[field],
-        ...new Set(
-          departmentProducts.flatMap((product) => String(product[field as keyof typeof product]).split(','),
-          ),
-        ),
-      ],
-    ]),
-  );
-  let visible = departmentProducts.filter((p) => Object.entries(filters).every(
-      ([key, value]) => value === 'all' ||
-        p[key as keyof typeof p].toString().split(',').includes(value),
-    ),
-  );
+  // La ruta usa un slug; el backend identifica las categorías por id numérico.
+  useEffect(() => {
 
-  if (sort === 'asc') visible.sort((a, b) => a.price - b.price);
+    const controller = new AbortController();
 
-  if (sort === 'desc') visible.sort((a, b) => b.price - a.price);
+    getCategories({ size: 100 }, controller.signal)
+      .then(({ content }) => {
 
-  if (sort === 'new') visible = visible.toReversed();
+        const match = content.find(
+          (item) => categorySlug(item.name) === category,
+        );
 
-  if (!selected)
+        if (match) setSelected(match);
+        else setMissing(true);
+      })
+      .catch((cause) => {
+
+        if (!controller.signal.aborted) setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [category]);
+
+  const categoryId = selected?.id;
+
+  useEffect(() => {
+
+    if (categoryId === undefined) return;
+
+    const controller = new AbortController();
+
+    getProducts(
+      { page, size, categoryId, ...sortParams[sort] },
+      controller.signal,
+    )
+      .then((data) => {
+
+        setResult(data);
+
+        setError('');
+      })
+      .catch((cause) => {
+
+        if (!controller.signal.aborted) setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [categoryId, page, sort]);
+
+  function changePage(next: number) {
+
+    setPage(next - 1);
+
+    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  const visible = result?.content ?? [];
+
+  if (missing)
     return (
       <EmptyState
         title="Categoría no encontrada"
@@ -96,6 +142,15 @@ export function Catalog() {
         to="/#categorias"
         action="Ver categorías"
       />
+    );
+
+  if (!selected)
+    return (
+      <main className="catalog-page">
+        <p role={error ? 'alert' : 'status'}>
+          {error || 'Cargando categoría…'}
+        </p>
+      </main>
     );
 
   return (
@@ -108,45 +163,6 @@ export function Catalog() {
         <h1 className="category-title">{selected.name}</h1>
       </div>
       <div className="catalog-toolbar" ref={toolbar}>
-        <details className="catalog-dropdown" name="catalog-tools">
-          <summary>
-            Filtrar <span className="dropdown-chevron" aria-hidden="true" />
-          </summary>
-          <div className="catalog-dropdown-panel filter-dropdown-panel">
-            {Object.entries(options).map(([key, values]) => (
-              <details className="filter-choice" key={key}>
-                <summary>
-                  {values[0]}
-                  {filters[key] && filters[key] !== 'all'
-                    ? ': ' + filters[key]
-                    : ''}{' '}
-                  <span className="dropdown-chevron" aria-hidden="true" />
-                </summary>
-                <div className="filter-choice-options">
-                  {['all', ...values.slice(1)].map((value) => (
-                    <label key={value}>
-                      <input
-                        type="radio"
-                        name={'filter-' + key}
-                        checked={(filters[key] || 'all') === value}
-                        onChange={() => setFilters({ ...filters, [key]: value })
-                        }
-                      />
-                      {value === 'all'
-                        ? 'Todos'
-                        : value === 'algodon'
-                          ? 'Algodón'
-                          : value.charAt(0).toUpperCase() + value.slice(1)}
-                    </label>
-                  ))}
-                </div>
-              </details>
-            ))}
-            <button className="clear-filters" onClick={() => setFilters({})}>
-              Limpiar filtros
-            </button>
-          </div>
-        </details>
         <details
           className="catalog-dropdown sort-dropdown"
           name="catalog-tools"
@@ -168,6 +184,8 @@ export function Catalog() {
 
                   setSort(value);
 
+                  setPage(0);
+
                   event.currentTarget
                     .closest('details')
                     ?.removeAttribute('open');
@@ -179,7 +197,7 @@ export function Catalog() {
           </div>
         </details>
         <span className="product-count" role="status">
-          {visible.length} productos
+          {result ? result.totalElements + ' productos' : 'Cargando productos…'}
         </span>
       </div>
       <div className="catalog-layout">
@@ -194,16 +212,27 @@ export function Catalog() {
           </aside>
           <section className="catalog-products" id="catalog">
             {visible.map((p) => (
-              <ProductCard key={p.name} product={p} />
+              <CatalogProductCard key={p.id} product={p} />
             ))}
-            {!visible.length && (
+            {error && (
+              <div className="catalog-empty" role="alert">
+                <h2>No pudimos cargar los productos</h2>
+                <p>{error}</p>
+              </div>
+            )}
+            {result && !visible.length && (
               <div className="catalog-empty">
                 <h2>No encontramos productos</h2>
-                <p>Prueba con otros filtros para encontrar lo que buscas.</p>
-                <button className="btn" onClick={() => setFilters({})}>
-                  Limpiar filtros
-                </button>
+                <p>Esta categoría aún no tiene productos disponibles.</p>
               </div>
+            )}
+            {result && (
+              <Pagination
+                page={page + 1}
+                pages={result.totalPages}
+                onChange={changePage}
+                label="Páginas de productos"
+              />
             )}
           </section>
         </div>
