@@ -23,8 +23,11 @@ const api = spawn(process.execPath, ['server/index.mjs'], {
 await once(api.stdout, 'data');
 process.env.VITE_API_URL = `http://localhost:${apiPort}`;
 
-const server = await createServer({ server: { middlewareMode: true } });
-const { CartContext, readItems } =
+const server = await createServer({
+  configFile: false,
+  server: { middlewareMode: true, hmr: false },
+});
+const { cartStore, readItems, selectCartCount, selectCartTotal } =
   await server.ssrLoadModule('/src/store/cart.ts');
 const { AccountContext, passwordHash, passwordValid } =
   await server.ssrLoadModule('/src/store/account.ts');
@@ -77,15 +80,6 @@ test('La confirmación presenta método, dirección y entrega del pedido sin inv
   assert.ok(!html.includes('4321'));
   assert.ok(html.includes('no se realizan cobros ni se envían correos'));
 });
-const cart = {
-  cart: [],
-  count: 0,
-  total: 0,
-  message: '',
-  add: noop,
-  notify: noop,
-  setCart: noop,
-};
 const account = {
   user: null,
   orders: [],
@@ -105,19 +99,15 @@ function render( Component, route, routePattern = '*', props = {}, accountValue 
       MemoryRouter,
       { initialEntries: [route] },
       createElement(
-        CartContext.Provider,
-        { value: cart },
+        AccountContext.Provider,
+        { value: accountValue },
         createElement(
-          AccountContext.Provider,
-          { value: accountValue },
-          createElement(
-            Routes,
-            null,
-            createElement(Route, {
-              path: routePattern,
-              element: createElement(Component, props),
-            }),
-          ),
+          Routes,
+          null,
+          createElement(Route, {
+            path: routePattern,
+            element: createElement(Component, props),
+          }),
         ),
       ),
     ),
@@ -221,6 +211,41 @@ test('Un carrito corrupto no impide abrir la aplicación', () => {
     JSON.stringify([{ name: 'Producto', price: 100, qty: -1 }]),
   );
   assert.deepEqual(readItems('bad-cart'), []);
+});
+
+test('El store agrupa variantes, calcula totales y conserva el formato de eco-cart', () => {
+  const { add, notify, setCart } = cartStore.getState();
+  const item = {
+    name: 'Polera Aurora',
+    price: 13990,
+    size: 's',
+    color: 'negro',
+  };
+
+  try {
+    add(item, 2);
+    add(item);
+    add({ ...item, size: 'm' });
+
+    const expected = [
+      { ...item, qty: 3 },
+      { ...item, size: 'm', qty: 1 },
+    ];
+    const state = cartStore.getState();
+    assert.deepEqual(state.cart, expected);
+    assert.equal(selectCartCount(state), 4);
+    assert.equal(selectCartTotal(state), 55960);
+    assert.equal(state.message, 'Polera Aurora se agregó al carrito');
+    assert.deepEqual(readItems('eco-cart'), expected);
+
+    setCart((cart) => cart.slice(1));
+    assert.deepEqual(readItems('eco-cart'), expected.slice(1));
+    setCart([]);
+    assert.deepEqual(readItems('eco-cart'), []);
+  } finally {
+    notify('');
+    setCart([]);
+  }
 });
 
 const { products, productUrl, quickSelection } = await server.ssrLoadModule(
@@ -396,20 +421,20 @@ test('Todos los productos tienen una fotografía JPEG local y texto alternativo'
   }
 });
 
-test('Catálogo y ficha muestran la misma fotografía de un producto', async () => {
-  const product = products.find(
-    (product) => product.name === 'Granola Amanecer',
-  );
+test('La tarjeta del catálogo enlaza a la ficha con variantes y conserva la fotografía', async () => {
+  const product = products.find((product) => product.name === 'Polera Aurora');
   const source = productImages[product.name].src;
   const { content } = await getProducts({ search: product.name });
   const card = render(CatalogProductCard, '/', '*', {
     product: content.find((item) => item.name === product.name),
   });
-  const detail = render(
-    Product,
-    productUrl(product),
-    '/productos/:category/producto',
-  );
+  const href = card.match(/href="([^"]+)"/)?.[1];
+  assert.equal(href, productUrl(product));
+  const detail = render(Product, href, '/productos/:category/producto');
+  assert.match(detail, /TALLA/);
+  assert.match(detail, /COLOR/);
+  assert.match(detail, /<select/);
+  assert.match(detail, /Agregar a carrito/i);
   assert.ok(card.includes(`src="${source}"`));
   assert.ok(detail.includes(`src="${source}"`));
 });
@@ -541,30 +566,29 @@ test('El carrito vacío presenta ilustración y acción para seguir comprando', 
 });
 
 const { Layout } = await server.ssrLoadModule('/src/components/Layout.tsx');
-test('Carrito y panel lateral muestran variantes sin edición y permiten eliminar productos', () => {
-  const previous = cart.cart;
-  cart.cart = [
+test('Carrito y panel lateral muestran variantes sin edición y permiten eliminar productos', ({ mock, }) => {
+  const cart = [
     { name: 'Polera Aurora', price: 13990, qty: 1, size: 's', color: 'negro' },
   ];
-  try {
-    for (const [Component, props] of [
-      [Cart, { openAuth: noop }],
-      [Layout, { layer: 'cart', setLayer: noop }],
-    ]) {
-      const html = render(Component, '/carrito', '*', props);
-      assert.ok(html.includes('<dt>Talla:</dt><dd>s</dd>'));
-      assert.ok(html.includes('<dt>Color:</dt><dd>negro</dd>'));
-      assert.match(html, /aria-label="Eliminar Polera Aurora"/);
-      assert.doesNotMatch(html, /<select/);
-      assert.doesNotMatch(html, />\s*Editar\s*</);
-      if (Component === Layout) {
-        assert.match(html, /recommendation-carousel/);
-        assert.ok(
-          html.indexOf('drawer-item') < html.indexOf('recommendation-carousel'),
-        );
-      }
+  mock.method(cartStore, 'getInitialState', () => ({
+    ...cartStore.getState(),
+    cart,
+  }));
+  for (const [Component, props] of [
+    [Cart, { openAuth: noop }],
+    [Layout, { layer: 'cart', setLayer: noop }],
+  ]) {
+    const html = render(Component, '/carrito', '*', props);
+    assert.ok(html.includes('<dt>Talla:</dt><dd>s</dd>'));
+    assert.ok(html.includes('<dt>Color:</dt><dd>negro</dd>'));
+    assert.match(html, /aria-label="Eliminar Polera Aurora"/);
+    assert.doesNotMatch(html, /<select/);
+    assert.doesNotMatch(html, />\s*Editar\s*</);
+    if (Component === Layout) {
+      assert.match(html, /recommendation-carousel/);
+      assert.ok(
+        html.indexOf('drawer-item') < html.indexOf('recommendation-carousel'),
+      );
     }
-  } finally {
-    cart.cart = previous;
   }
 });

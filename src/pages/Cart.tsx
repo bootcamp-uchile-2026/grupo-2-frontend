@@ -3,7 +3,7 @@ import { ProductImage } from '../components/ProductImage';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { money, productLabels } from '../data/products';
-import { readItems, useCart } from '../store/cart';
+import { readItems, selectCartTotal, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import { Steps } from '../components/Steps';
 import { EmptyIllustration } from '../components/EmptyIllustration';
@@ -11,7 +11,11 @@ import type { CartItem } from '../store/cart';
 
 export function Cart({ openAuth }: { openAuth: () => void }) {
 
-  const { cart, setCart, total, notify, add } = useCart();
+  const cart = useCart((state) => state.cart);
+  const setCart = useCart((state) => state.setCart);
+  const total = useCart(selectCartTotal);
+  const notify = useCart((state) => state.notify);
+  const add = useCart((state) => state.add);
   const { user } = useAccount();
   const [saved, setSaved] = useState(() => readItems('eco-saved'));
   const [error, setError] = useState('');
@@ -30,7 +34,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
 
     updateSaved([...saved, item]);
 
-    setCart(cart.filter((_, i) => i !== index));
+    setCart((current) => current.filter((_, i) => i !== index));
 
     notify(`${item.name} se guardó para después`);
   }
@@ -96,8 +100,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                   <div className="quantity">
                     <button
                       aria-label={`Disminuir cantidad de ${p.name}`}
-                      onClick={() => setCart(
-                          cart.map((x, index) => index === i
+                      onClick={() => setCart((current) => current.map((x, index) => index === i
                               ? { ...x, qty: Math.max(1, x.qty - 1) }
                               : x,
                           ),
@@ -109,8 +112,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     <span>{p.qty}</span>
                     <button
                       aria-label={`Aumentar cantidad de ${p.name}`}
-                      onClick={() => setCart(
-                          cart.map((x, index) => index === i ? { ...x, qty: x.qty + 1 } : x,
+                      onClick={() => setCart((current) => current.map((x, index) => index === i ? { ...x, qty: x.qty + 1 } : x,
                           ),
                         )
                       }
@@ -126,7 +128,8 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     aria-label={`Eliminar ${p.name}`}
                     onClick={() => {
 
-                      setCart(cart.filter((_, index) => index !== i));
+                      setCart((current) => current.filter((_, index) => index !== i),
+                      );
 
                       notify(`${p.name} se eliminó del carrito`);
                     }}

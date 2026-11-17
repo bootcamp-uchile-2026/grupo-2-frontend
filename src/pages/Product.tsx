@@ -11,7 +11,10 @@ export function Product() {
 
   const [params] = useSearchParams(),
     navigate = useNavigate();
-  const { cart, setCart, add, notify } = useCart();
+  const cart = useCart((state) => state.cart);
+  const setCart = useCart((state) => state.setCart);
+  const add = useCart((state) => state.add);
+  const notify = useCart((state) => state.notify);
   const { category = 'ropa-y-accesorios' } = useParams();
   const selectedCategory = categories.find((item) => item.id === category);
   const name = params.get('name') || 'Polera Aurora';
@@ -47,8 +50,7 @@ export function Product() {
     }
 
     if (item) {
-      setCart(
-        cart.map((p, i) => (i === edit ? { ...p, color, size, qty } : p)),
+      setCart((current) => current.map((p, i) => (i === edit ? { ...p, color, size, qty } : p)),
       );
 
       navigate('/carrito');

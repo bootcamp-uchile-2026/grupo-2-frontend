@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { categories } from '../../data/categories';
-import { useCart } from '../../store/cart';
+import { selectCartCount, useCart } from '../../store/cart';
 
 export function Header({ openCart }: { openCart: () => void }) {
 
-  const { count } = useCart();
+  const count = useCart(selectCartCount);
   const [announcementOpen, setAnnouncementOpen] = useState(true);
   const [categoryMenu, setCategoryMenu] = useState(false);
   const location = useLocation();

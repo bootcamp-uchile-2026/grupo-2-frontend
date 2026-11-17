@@ -7,7 +7,7 @@ import { useCart } from '../store/cart';
 
 export function ProductCard({ product, }: { product: (typeof products)[number]; }) {
 
-  const { add } = useCart();
+  const add = useCart((state) => state.add);
 
   return (
     <article className="catalog-product shop-card">
