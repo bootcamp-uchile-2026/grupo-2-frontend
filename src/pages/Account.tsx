@@ -12,7 +12,7 @@ export function Account() {
 
   const { section = 'compras', orderId } = useParams();
   const { user, orders, updateProfile, changePassword } = useAccount();
-  const { notify } = useCart();
+  const notify = useCart((state) => state.notify);
   const [editing, setEditing] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [error, setError] = useState('');

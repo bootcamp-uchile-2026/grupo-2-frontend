@@ -1,20 +1,21 @@
+import { Link } from 'react-router-dom';
 import { ProductImage } from './ProductImage';
 import { HeaderIcon } from './Header/HeaderIcon';
-import { money } from '../data/products';
+import { money, productUrl } from '../data/products';
 import type { ApiProduct } from '../api/client';
 import { useCart } from '../store/cart';
 
 // Tarjeta para productos de GET /products (ProductSummaryDto).
 export function CatalogProductCard({ product }: { product: ApiProduct }) {
 
-  const { add } = useCart();
+  const add = useCart((state) => state.add);
   const stars = product.rating === null ? null : Math.round(product.rating);
   const onSale =
     product.offerPrice !== null && product.finalPrice < product.price;
 
   return (
     <article className="catalog-product shop-card">
-      <div className="card-summary">
+      <Link to={productUrl(product)}>
         <ProductImage name={product.name} />
         <h2>{product.name}</h2>
         <p className="card-description">{product.producerName}</p>
@@ -32,7 +33,7 @@ export function CatalogProductCard({ product }: { product: ApiProduct }) {
             </>
           )}
         </p>
-      </div>
+      </Link>
       <div className="card-bottom">
         {stars === null ? (
           <small>Sin valoraciones</small>

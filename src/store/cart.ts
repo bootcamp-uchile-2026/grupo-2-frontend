@@ -1,4 +1,6 @@
-import { createContext, useContext } from 'react';
+import { useStore } from 'zustand';
+import { createStore } from 'zustand/vanilla';
+import { products, quickSelection } from '../data/products';
 
 export type CartItem = {
   name: string;
@@ -28,21 +30,100 @@ export function readItems(key: string): CartItem[] {
   }
 }
 
-export const CartContext = createContext<null | {
+type CartState = {
   cart: CartItem[];
-  setCart: (cart: CartItem[]) => void;
+  setCart: (update: CartItem[] | ((cart: CartItem[]) => CartItem[])) => void;
   add: (item: Omit<CartItem, 'qty'>, qty?: number) => void;
   notify: (message: string) => void;
   message: string;
-  count: number;
-  total: number;
-}>(null);
+};
 
-export function useCart() {
+const cartKey = 'eco-cart';
 
-  const value = useContext(CartContext);
+export const cartStore = createStore<CartState>()((set, get) => {
 
-  if (!value) throw new Error('Falta CartProvider');
+  let notificationTimer: ReturnType<typeof setTimeout> | undefined;
 
-  return value;
+  return {
+    cart: readItems(cartKey).map((item) => {
+
+      const product = products.find((product) => product.name === item.name);
+
+      if (!product) return item;
+
+      const defaults = quickSelection(product);
+
+      return {
+        ...item,
+        size:
+          !item.size || item.size === 'Por elegir' ? defaults.size : item.size,
+        color:
+          !item.color || item.color === 'Por elegir'
+            ? defaults.color
+            : item.color,
+      };
+    }),
+    message: '',
+    setCart: (update) => set(({ cart }) => ({
+        cart: typeof update === 'function' ? update(cart) : update,
+      })),
+    add: (item, qty = 1) => {
+
+      const { setCart, notify } = get();
+
+      setCart((cart) => {
+
+        const found = cart.find(
+          (p) => p.name === item.name &&
+            p.price === item.price &&
+            p.size === item.size &&
+            p.color === item.color,
+        );
+
+        return found
+          ? cart.map((p) => (p === found ? { ...p, qty: p.qty + qty } : p))
+          : [...cart, { ...item, qty }];
+      });
+
+      notify(`${item.name} se agregó al carrito`);
+    },
+    notify: (message) => {
+
+      clearTimeout(notificationTimer);
+
+      set({ message });
+
+      if (message) {
+        notificationTimer = setTimeout(
+          () => set({ message: '' }),
+          message.startsWith('¡Bienvenida') ? 2000 : 2200,
+        );
+      }
+    },
+  };
+});
+
+function saveCart(cart: CartItem[]) {
+
+  try {
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+  } catch {
+    // El carrito sigue disponible en memoria si el navegador bloquea el almacenamiento.
+  }
 }
+
+saveCart(cartStore.getState().cart);
+
+cartStore.subscribe(({ cart }, previous) => {
+
+  if (cart !== previous.cart) saveCart(cart);
+});
+
+export function useCart<T>(selector: (state: CartState) => T) {
+
+  return useStore(cartStore, selector);
+}
+
+export const selectCartCount = ({ cart }: CartState) => cart.reduce((count, item) => count + item.qty, 0);
+
+export const selectCartTotal = ({ cart }: CartState) => cart.reduce((total, item) => total + item.price * item.qty, 0);

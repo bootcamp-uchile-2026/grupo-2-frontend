@@ -12,7 +12,7 @@ export function AuthForm({ destination = '/mi-cuenta/compras', guest = false, }:
   const [busy, setBusy] = useState(false);
   const [provider, setProvider] = useState('');
   const { login, register, socialLogin } = useAccount();
-  const { notify } = useCart();
+  const notify = useCart((state) => state.notify);
   const navigate = useNavigate();
 
   async function submit(event: FormEvent<HTMLFormElement>) {

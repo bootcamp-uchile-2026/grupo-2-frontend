@@ -3,7 +3,7 @@ import { ProductImage } from '../components/ProductImage';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../store/cart';
+import { selectCartTotal, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import type { Order } from '../store/account';
 import { money, productLabels } from '../data/products';
@@ -35,7 +35,10 @@ function estimatedDelivery() {
 
 export function Checkout() {
 
-  const { cart, setCart, total, notify } = useCart();
+  const cart = useCart((state) => state.cart);
+  const setCart = useCart((state) => state.setCart);
+  const total = useCart(selectCartTotal);
+  const notify = useCart((state) => state.notify);
   const { user, placeOrder } = useAccount();
   const [noNumber, setNoNumber] = useState(false);
   const [shipment, setShipment] = useState('');
