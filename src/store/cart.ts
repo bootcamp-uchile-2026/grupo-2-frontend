@@ -155,3 +155,19 @@ export function cartFootprint(items: CartItem[]) {
     ),
   };
 }
+
+saveCart(cartStore.getState().cart);
+
+cartStore.subscribe(({ cart }, previous) => {
+
+  if (cart !== previous.cart) saveCart(cart);
+});
+
+export function useCart<T>(selector: (state: CartState) => T) {
+
+  return useStore(cartStore, selector);
+}
+
+export const selectCartCount = ({ cart }: CartState) => cart.reduce((count, item) => count + item.qty, 0);
+
+export const selectCartTotal = ({ cart }: CartState) => cart.reduce((total, item) => total + item.price * item.qty, 0);
