@@ -21,6 +21,8 @@ import '@fontsource/poppins/latin-600.css';
 import '@fontsource/poppins/latin-700.css';
 import './figma-refinements.css';
 import './ux-alignment.css';
+import './hito3.css';
+import { Favorites } from './pages/Favorites';
 
 function LegacyRedirect({ to }: { to: string }) {
 
@@ -54,6 +56,8 @@ export function App() {
           <Route element={<Layout layer={layer} setLayer={setLayer} />}>
             <Route path="/" element={<Home />} />
             <Route path="/buscar" element={<Search />} />
+            <Route path="/favoritos" element={<Favorites />} />
+            <Route path="/productos" element={<CatalogRoute />} />
             <Route path="/productos/:category" element={<CatalogRoute />} />
             <Route
               path="/productos/:category/producto"

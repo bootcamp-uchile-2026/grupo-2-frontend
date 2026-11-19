@@ -1,3 +1,4 @@
+import { hitoAsset, hitoProducts } from '../data/hito3';
 import { ProductCard } from '../components/ProductCard';
 import { products } from '../data/products';
 import { BlogSection } from '../components/BlogSection';
@@ -12,23 +13,57 @@ export function Home() {
   return (
     <main className="home-view">
       <section className="hero">
-        <div className="hero-copy">
-          <h1>Cuidemos el planeta una compra a la vez</h1>
-          <Link className="btn" to="/#huella-verde">
-            Conoce más <img src="/img/figma/home-leaf.svg" alt="" />
-          </Link>
-          <p>
-            Somos una cooperativa de productores sustentables de la ciudad de
-            Santiago, unidos por el cuidado del medio ambiente y el respeto a
-            los productos locales.
-          </p>
-        </div>
-        <div className="hero-art">
+        <div className="hero-art" aria-hidden="true">
           <img
-            src="/img/figma/home-hero.png"
-            alt="Ovillos de fibras naturales y materiales de trabajo artesanal"
+            className="hito-hero-olive"
+            src={hitoAsset('hero-olive.svg')}
+            alt=""
+          />
+          <img
+            className="hito-hero-orange"
+            src={hitoAsset('hero-orange.svg')}
+            alt=""
+          />
+          <img
+            className="hito-hero-producers"
+            src={hitoAsset('hero-producers.png')}
+            alt=""
             fetchPriority="high"
           />
+          <img
+            className="hito-hero-leaves left"
+            src={hitoAsset('hero-leaves.png')}
+            alt=""
+          />
+          <img
+            className="hito-hero-leaves right"
+            src={hitoAsset('hero-leaves.png')}
+            alt=""
+          />
+          <img
+            className="hito-hero-wave"
+            src={hitoAsset('hero-wave.svg')}
+            alt=""
+          />
+        </div>
+        <div className="hero-copy">
+          <h1>
+            Cuidemos el planeta
+            <br />
+            una compra a la vez
+          </h1>
+          <p>
+            Productos naturales, hechos con dedicación por una cooperativa de 8
+            productores locales.
+          </p>
+          <div className="hero-links">
+            <Link className="btn" to="/#huella-verde">
+              Conocer más <img src={hitoAsset('hero-arrow.svg')} alt="" />
+            </Link>
+            <Link className="btn outline" to="/productos">
+              Ver productos
+            </Link>
+          </div>
         </div>
       </section>
       <Categories />
@@ -36,10 +71,12 @@ export function Home() {
         <Carousel kind="offer" desktopCount={1} gap={0}>
           <div className="offer-track">
             <article className="offer-slide active">
-              <BannerImage category="alimentos" />
-              <span>Descubre productos de origen local</span>
-              <Link className="btn" to="/productos/alimentos">
-                Ver productos
+              <img src={hitoAsset('offer-care.jpg')} alt="" />
+              <span>
+                Cuidado personal <strong>Hasta 50% de descuento</strong>
+              </span>
+              <Link className="btn" to="/productos/cuidado-personal?ofertas=1">
+                Ver ofertas
               </Link>
             </article>
             <article className="offer-slide">
@@ -50,9 +87,9 @@ export function Home() {
               </Link>
             </article>
             <article className="offer-slide">
-              <BannerImage category="cuidado-personal" />
-              <span>Productos libres de tóxicos</span>
-              <Link className="btn" to="/productos/cuidado-personal">
+              <BannerImage category="alimentos" />
+              <span>Descubre productos de origen local</span>
+              <Link className="btn" to="/productos/alimentos">
                 Ver productos
               </Link>
             </article>
@@ -76,14 +113,14 @@ export function Home() {
             type="button"
             aria-label="Oferta anterior"
           >
-            ‹
+            <img src={hitoAsset('offer-prev.svg')} alt="" />
           </button>
           <button
             className="carousel-arrow next"
             type="button"
             aria-label="Oferta siguiente"
           >
-            ›
+            <img src={hitoAsset('offer-next.svg')} alt="" />
           </button>
           <div className="carousel-dots" aria-label="Seleccionar oferta">
             <button className="active" aria-label="Oferta 1"></button>
@@ -100,15 +137,12 @@ export function Home() {
       >
         <div className="home-product-grid">
           {products
-            .filter((p) => p.department === 'ropa-y-accesorios')
-            .slice(0, 7)
+            .filter((p) => hitoProducts.slice(0, 7).some(({ name }) => name === p.name),
+            )
             .map((p) => (
               <ProductCard key={p.name} product={p} />
             ))}
-          <Link
-            className="btn home-products-more"
-            to="/productos/ropa-y-accesorios"
-          >
+          <Link className="btn home-products-more" to="/productos">
             Más populares →
           </Link>
         </div>

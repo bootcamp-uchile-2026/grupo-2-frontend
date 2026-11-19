@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { productImages } from '../data/productImages';
 
-export function ProductImage({ name, className = '', priority = false, }: { name: string; className?: string; priority?: boolean; }) {
+export function ProductImage({ name, className = '', priority = false, source, }: { name: string; className?: string; priority?: boolean; source?: string; }) {
 
   const [failed, setFailed] = useState(false);
-  const image = productImages[name];
+  const image = source ? { src: source, alt: name } : productImages[name];
 
   return (
     <div className={`placeholder product-photo ${className}`.trim()}>

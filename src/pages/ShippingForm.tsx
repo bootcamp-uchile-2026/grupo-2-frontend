@@ -5,8 +5,8 @@ import type { ShippingData } from './shippingSchema';
 
 export function ShippingForm({ confirm, noNumber, setNoNumber, }: { confirm: (event: FormEvent<HTMLFormElement>, data: ShippingData) => void; noNumber: boolean; setNoNumber: (value: boolean) => void; }) {
 
-  const [identificationOpen, setIdentificationOpen] = useState(true);
-  const [shippingOpen, setShippingOpen] = useState(true);
+  const [identificationOpen, setIdentificationOpen] = useState(false);
+  const [shippingOpen, setShippingOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const touched = useRef(new Set<string>());
