@@ -155,3 +155,7 @@ export function cartFootprint(items: CartItem[]) {
     ),
   };
 }
+
+export const selectCartCount = ({ cart }: CartState) => cart.reduce((count, item) => count + item.qty, 0);
+
+export const selectCartTotal = ({ cart }: CartState) => cart.reduce((total, item) => total + item.price * item.qty, 0);
