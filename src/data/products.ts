@@ -1,3 +1,5 @@
+import { findHitoProduct, hitoProducts } from './hito3';
+
 const clothingProducts = [
   {
     name: 'Polera Aurora',
@@ -130,6 +132,9 @@ export type Product = {
   description: string;
   footprint: string;
   production: string;
+  discount?: number;
+  co2Avoided?: number;
+  greenPoints?: number;
 };
 
 const additionalProducts: Product[] = [
@@ -231,7 +236,8 @@ const additionalProducts: Product[] = [
   },
   {
     name: 'Jabón Botánico de Avena',
-    price: 3490,
+    price: 1745,
+    discount: 50,
     department: 'cuidado-personal',
     category: 'jabones',
     material: 'avena',
@@ -827,6 +833,16 @@ export const products: Product[] = [
       'Confeccionado en pequeños talleres locales, cuidando los materiales y los detalles de cada prenda.',
   })),
   ...additionalProducts,
+  ...hitoProducts.map((product) => ({
+    ...product,
+    gender: product.gender ?? '',
+    size: product.size ?? 'Única',
+    color: product.color ?? 'Único',
+    material: '',
+    description: product.description ?? '',
+    footprint: '',
+    production: '',
+  })),
 ];
 
 export const money = (n: number) => '$' + n.toLocaleString('es-CL');
@@ -853,3 +869,25 @@ export const productLabels = (item: { name: string }) => products.find((product)
   'ropa-y-accesorios'
     ? { size: 'Talla', color: 'Color' }
     : { size: 'Presentación', color: 'Acabado' };
+
+export function productAttributes(name: string, declared?: string[]) {
+
+  if (declared) return declared;
+
+  const featured = findHitoProduct(name);
+
+  if (featured?.attributes) return featured.attributes;
+
+  const product = products.find((entry) => entry.name === name);
+
+  if (!product) return [];
+
+  const footprint = product.footprint.split(' · ');
+
+  return [
+    ...(product.material.includes('reciclado') ? ['Reciclado'] : []),
+    ...(footprint.includes('Producción local') ? ['Producción local'] : []),
+    ...(footprint.includes('Embalaje reciclable') ? ['Envase reciclable'] : []),
+    ...(footprint.includes('Embalaje reducido') ? ['Embalaje reducido'] : []),
+  ];
+}

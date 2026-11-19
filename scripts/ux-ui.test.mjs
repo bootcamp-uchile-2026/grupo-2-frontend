@@ -406,18 +406,25 @@ const { productImages } = await server.ssrLoadModule(
   '/src/data/productImages.ts',
 );
 
-test('Todos los productos tienen una fotografía JPEG local y texto alternativo', async () => {
+test('Todos los productos tienen una fotografía local y texto alternativo', async () => {
   for (const product of products) {
     const image = productImages[product.name];
     assert.ok(image, product.name);
-    assert.match(image.src, /^\/img\/products\/\d+\.jpg$/);
+    assert.match(
+      image.src,
+      /^\/img\/(?:products\/\d+\.jpg|hito3\/[a-z-]+\.png)$/,
+    );
     assert.ok(image.alt.includes(product.name));
     const data = await readFile(
       new URL('../public' + image.src, import.meta.url),
     );
     assert.ok(data.length > 1000, product.name);
-    assert.equal(data[0], 0xff, product.name);
-    assert.equal(data[1], 0xd8, product.name);
+    const signature = image.src.endsWith('.png') ? '89504e470d0a1a0a' : 'ffd8';
+    assert.equal(
+      data.subarray(0, signature.length / 2).toString('hex'),
+      signature,
+      product.name,
+    );
   }
 });
 
@@ -428,7 +435,7 @@ test('La tarjeta del catálogo enlaza a la ficha con variantes y conserva la fot
   const card = render(CatalogProductCard, '/', '*', {
     product: content.find((item) => item.name === product.name),
   });
-  const href = card.match(/href="([^"]+)"/)?.[1];
+  const href = card.match(/<a\s[^>]*href="([^"]+)"/)?.[1];
   assert.equal(href, productUrl(product));
   const detail = render(Product, href, '/productos/:category/producto');
   assert.match(detail, /TALLA/);
@@ -557,6 +564,11 @@ test('La búsqueda ignora tildes y devuelve fichas de productos', () => {
   assert.match(html, /Resultados de búsqueda/);
   assert.match(html, /shop-card/);
   assert.doesNotMatch(html, /No encontramos tu producto/);
+  assert.ok(
+    html.indexOf('Resultados de búsqueda') <
+      html.indexOf('Reseñas de nuestros clientes'),
+  );
+  assert.match(html, /Reseñas de nuestros clientes/);
 });
 test('El carrito vacío presenta ilustración y acción para seguir comprando', () => {
   const html = render(Cart, '/carrito', '*', { openAuth: noop });

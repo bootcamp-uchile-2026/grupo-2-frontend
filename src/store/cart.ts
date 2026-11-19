@@ -8,6 +8,8 @@ export type CartItem = {
   size: string;
   color: string;
   qty: number;
+  co2Avoided?: number;
+  greenPoints?: number;
 };
 
 export function readItems(key: string): CartItem[] {
@@ -110,6 +112,48 @@ function saveCart(cart: CartItem[]) {
   } catch {
     // El carrito sigue disponible en memoria si el navegador bloquea el almacenamiento.
   }
+}
+
+saveCart(cartStore.getState().cart);
+
+cartStore.subscribe(({ cart }, previous) => {
+
+  if (cart !== previous.cart) saveCart(cart);
+});
+
+export function useCart<T>(selector: (state: CartState) => T) {
+
+  return useStore(cartStore, selector);
+}
+
+export const selectCartCount = ({ cart }: CartState) => cart.reduce((count, item) => count + item.qty, 0);
+
+export const selectCartTotal = ({ cart }: CartState) => cart.reduce((total, item) => total + item.price * item.qty, 0);
+
+export function cartFootprint(items: CartItem[]) {
+
+  const impact = items.map((item) => {
+
+    const product = products.find(({ name }) => name === item.name);
+
+    return {
+      co2: item.co2Avoided ?? product?.co2Avoided,
+      points: item.greenPoints ?? product?.greenPoints,
+      ...item,
+    };
+  });
+
+  return {
+    co2: impact.some(({ co2 }) => co2 === undefined)
+      ? null
+      : impact.reduce((total, { co2, qty }) => total + (co2 ?? 0) * qty, 0),
+    points: Math.floor(
+      impact.reduce(
+        (total, { points, price, qty }) => total + (points ?? price / 100) * qty,
+        0,
+      ),
+    ),
+  };
 }
 
 saveCart(cartStore.getState().cart);

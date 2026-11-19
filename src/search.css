@@ -135,3 +135,15 @@
     width: 115px;
   }
 }
+
+.site .search-page .search-reviews {
+  margin-top: clamp(38px, 6vw, 100px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.search-page .search-reviews .section-title {
+  color: #203b2b;
+  font-size: clamp(30px, 4vw, 56px);
+}

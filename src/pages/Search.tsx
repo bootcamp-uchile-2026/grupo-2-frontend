@@ -81,23 +81,30 @@ export function Search() {
               Ver más
             </Link>
           </section>
-          <section className="section reviews">
-            <h2 className="section-title">Reseñas de nuestros clientes</h2>
-            <div className="review-row">
-              {[
-                'Excelente calidad y despacho rápido.',
-                'Me encantó conocer el impacto positivo de mi compra.',
-                'Diseño precioso y producido localmente.',
-              ].map((text) => (
-                <article key={text}>
-                  <div className="stars">★★★★★</div>
-                  <p>{text}</p>
-                </article>
-              ))}
-            </div>
-          </section>
         </>
       )}
+      <section
+        className="section reviews search-reviews"
+        aria-labelledby="search-reviews-title"
+      >
+        <h2 className="section-title" id="search-reviews-title">
+          Reseñas de nuestros clientes
+        </h2>
+        <div className="review-row">
+          {[
+            'Me encantó la calidad de los productos. Es genial encontrar opciones más naturales y sustentables en un solo lugar.',
+            'Comprar en Buen Origen ha sido una excelente experiencia. Encontré justo lo que buscaba y todo fue muy sencillo.',
+            'Me gusta poder elegir productos que se alinean con un estilo de vida más consciente. Sin duda, volvería a comprar.',
+          ].map((text) => (
+            <article key={text}>
+              <div className="stars" role="img" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <p>“{text}”</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

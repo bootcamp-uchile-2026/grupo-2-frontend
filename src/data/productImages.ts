@@ -1,3 +1,5 @@
+import { hitoAsset, hitoProducts } from './hito3';
+
 export const productImages: Record<string, { src: string; alt: string }> = {
   'Polera Aurora': {
     src: '/img/products/8532638.jpg',
@@ -219,6 +221,12 @@ export const productImages: Record<string, { src: string; alt: string }> = {
     src: '/img/products/15758184.jpg',
     alt: 'Funda de Cojín Trama, fotografía ilustrativa.',
   },
+  ...Object.fromEntries(
+    hitoProducts.map(({ name, image }) => [
+      name,
+      { src: hitoAsset(image + '.png'), alt: name },
+    ]),
+  ),
   'Bolsa reutilizable': {
     src: '/img/products/4068314.jpg',
     alt: 'Tote Bag Lima, fotografía ilustrativa.',

@@ -1,12 +1,16 @@
 import { CatalogProductCard } from '../components/CatalogProductCard';
 import { BannerImage } from '../components/BannerImage';
-import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
 import { Pagination } from '../components/Pagination';
 import { getCategories, getProducts } from '../api/client';
-import type { ApiCategory, ApiProduct, Page, ProductQuery } from '../api/client';
+import type { ApiCategory, ApiProduct, ProductQuery } from '../api/client';
 import { categorySlug } from '../data/categories';
+import { CatalogFilters } from '../components/CatalogFilters';
+import { defaultFilters, matchesVariants } from '../data/catalogFilters';
+import type { Filters } from '../data/catalogFilters';
+import { productAttributes } from '../data/products';
 
 const size = 12;
 
@@ -23,60 +27,34 @@ const sortParams: Record<
 
 export function Catalog() {
 
-  const { category = 'ropa-y-accesorios' } = useParams();
+  const { category = '' } = useParams();
 
-  // La key reinicia filtros, orden y página al cambiar de categoría.
+  // Reinicia los filtros al cambiar de categoría.
   return <CatalogView key={category} category={category} />;
 }
 
 function CatalogView({ category }: { category: string }) {
 
-  const [selected, setSelected] = useState<ApiCategory | null>(null);
-  const [missing, setMissing] = useState(false);
-  const [result, setResult] = useState<Page<ApiProduct> | null>(null);
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [result, setResult] = useState<ApiProduct[] | null>(null);
   const [error, setError] = useState('');
-  // Página base 0, igual que el backend.
   const [page, setPage] = useState(0);
-  const toolbar = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(true);
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...defaultFilters,
+    offers: params.get('ofertas') === '1',
+  }));
+  const [draft, setDraft] = useState<Filters>(filters);
+  const selected = categories.find(
+    (entry) => categorySlug(entry.name) === category,
+  );
+  const categoryId = selected?.id;
+  const missing = categoriesLoaded && Boolean(category) && !selected;
+  const sort = filters.sort;
 
-  useEffect(() => {
-
-    function closeMenus(event: PointerEvent | KeyboardEvent) {
-
-      if (event instanceof KeyboardEvent && event.key !== 'Escape') return;
-
-      if (
-        event instanceof PointerEvent &&
-        toolbar.current?.contains(event.target as Node)
-      )
-        return;
-
-      toolbar.current
-        ?.querySelectorAll<HTMLDetailsElement>('.catalog-dropdown[open]')
-        .forEach((menu) => {
-
-          menu.open = false;
-
-          if (event instanceof KeyboardEvent)
-            menu.querySelector('summary')?.focus();
-        });
-    }
-
-    document.addEventListener('pointerdown', closeMenus);
-
-    document.addEventListener('keydown', closeMenus);
-
-    return () => {
-
-      document.removeEventListener('pointerdown', closeMenus);
-
-      document.removeEventListener('keydown', closeMenus);
-    };
-  }, []);
-
-  const [sort, setSort] = useState('featured');
-
-  // La ruta usa un slug; el backend identifica las categorías por id numérico.
   useEffect(() => {
 
     const controller = new AbortController();
@@ -84,12 +62,9 @@ function CatalogView({ category }: { category: string }) {
     getCategories({ size: 100 }, controller.signal)
       .then(({ content }) => {
 
-        const match = content.find(
-          (item) => categorySlug(item.name) === category,
-        );
+        setCategories(content);
 
-        if (match) setSelected(match);
-        else setMissing(true);
+        setCategoriesLoaded(true);
       })
       .catch((cause) => {
 
@@ -97,33 +72,56 @@ function CatalogView({ category }: { category: string }) {
       });
 
     return () => controller.abort();
-  }, [category]);
-
-  const categoryId = selected?.id;
+  }, []);
 
   useEffect(() => {
 
-    if (categoryId === undefined) return;
+    if (category && categoryId === undefined) return;
 
     const controller = new AbortController();
+    const request = { size: 100, categoryId, ...sortParams[sort] };
 
-    getProducts(
-      { page, size, categoryId, ...sortParams[sort] },
-      controller.signal,
-    )
-      .then((data) => {
+    async function load() {
 
-        setResult(data);
+      const first = await getProducts(request, controller.signal);
+      const remaining = await Promise.all(
+        Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, index) => getProducts({ ...request, page: index + 1 }, controller.signal),
+        ),
+      );
 
+      if (!controller.signal.aborted) {
         setError('');
-      })
-      .catch((cause) => {
 
-        if (!controller.signal.aborted) setError(cause.message);
-      });
+        setResult(
+          first.content.concat(
+            remaining.flatMap((response) => response.content),
+          ),
+        );
+      }
+    }
+
+    load().catch((cause) => {
+
+      if (!controller.signal.aborted) setError(cause.message);
+    });
 
     return () => controller.abort();
-  }, [categoryId, page, sort]);
+  }, [category, categoryId, sort]);
+
+  function apply(next: Filters) {
+
+    if (next.sort !== sort) {
+      setResult(null);
+
+      setError('');
+    }
+
+    setFilters(next);
+
+    setDraft(next);
+
+    setPage(0);
+  }
 
   function changePage(next: number) {
 
@@ -132,7 +130,19 @@ function CatalogView({ category }: { category: string }) {
     document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  const visible = result?.content ?? [];
+  const filtered =
+    result?.filter(
+      (product) => (!filters.available || product.available) &&
+        (!filters.offers || product.finalPrice < product.price) &&
+        (filters.maxPrice === defaultFilters.maxPrice ||
+          product.finalPrice <= filters.maxPrice) &&
+        filters.attributes.every((attribute) => productAttributes(product.name, product.attributes).includes(
+            attribute,
+          ),
+        ) &&
+        matchesVariants(product.name, filters),
+    ) ?? [];
+  const visible = filtered.slice(page * size, (page + 1) * size);
 
   if (missing)
     return (
@@ -144,7 +154,7 @@ function CatalogView({ category }: { category: string }) {
       />
     );
 
-  if (!selected)
+  if (category && !selected)
     return (
       <main className="catalog-page">
         <p role={error ? 'alert' : 'status'}>
@@ -156,59 +166,74 @@ function CatalogView({ category }: { category: string }) {
   return (
     <main className="catalog-page">
       <div className="breadcrumbs">
-        <Link to="/">Home</Link> › {selected.name}
+        <Link to="/">Inicio</Link> › {selected?.name ?? 'Productos'}
       </div>
-      <div className="category-hero">
-        <BannerImage category={category} priority />
-        <h1 className="category-title">{selected.name}</h1>
-      </div>
-      <div className="catalog-toolbar" ref={toolbar}>
-        <details
-          className="catalog-dropdown sort-dropdown"
-          name="catalog-tools"
+      {selected ? (
+        <div className="category-hero">
+          <BannerImage category={category} priority />
+          <h1 className="category-title">{selected.name}</h1>
+        </div>
+      ) : (
+        <h1 className="section-title">Todos los productos</h1>
+      )}
+      <div className="catalog-toolbar">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls="catalog-filters"
+          onClick={() => setOpen(!open)}
         >
-          <summary>
-            Ordenar por <span className="dropdown-chevron" aria-hidden="true" />
-          </summary>
-          <div className="catalog-dropdown-panel sort-dropdown-panel">
-            {[
-              ['asc', 'Precio menor a mayor'],
-              ['desc', 'Precio mayor a menor'],
-              ['featured', 'Productos destacados'],
-              ['new', 'Productos más recientes'],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                aria-pressed={sort === value}
-                onClick={(event) => {
-
-                  setSort(value);
-
-                  setPage(0);
-
-                  event.currentTarget
-                    .closest('details')
-                    ?.removeAttribute('open');
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </details>
+          Filtrar <span className="dropdown-chevron" aria-hidden="true" />
+        </button>
         <span className="product-count" role="status">
-          {result ? result.totalElements + ' productos' : 'Cargando productos…'}
+          {result
+            ? filtered.length + ' productos'
+            : !error && 'Cargando productos…'}
         </span>
       </div>
-      <div className="catalog-layout">
+      <div className="catalog-layout hito-filters-open">
         <div className="catalog-assortment">
-          <aside className="catalog-story">
-            <BannerImage category={category} />
-            <p>
-              Hecho con dedicación
-              <br />
-              <strong>Descubre el origen de cada producto</strong>
-            </p>
+          <aside className="catalog-sidebar">
+            <figure className="catalog-producer">
+              <div className="catalog-producer-photo">
+                <img
+                  src="/img/hito3/camila-rojas.png"
+                  alt="Retrato de Camila Rojas"
+                  width={1080}
+                  height={1080}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>
+                Hecho artesanalmente
+                <br />
+                Camila Rojas · Retrato de referencia
+              </figcaption>
+            </figure>
+            <div id="catalog-filters" hidden={!open}>
+              <CatalogFilters
+                category={category}
+                categories={categories}
+                draft={draft}
+                change={setDraft}
+                selectCategory={(slug) => navigate(slug ? '/productos/' + slug : '/productos')
+                }
+                apply={() => apply(draft)}
+                clear={() => {
+
+                  apply(defaultFilters);
+
+                  if (params.has('ofertas'))
+                    navigate(
+                      category ? '/productos/' + category : '/productos',
+                      {
+                        replace: true,
+                      },
+                    );
+                }}
+              />
+            </div>
           </aside>
           <section className="catalog-products" id="catalog">
             {visible.map((p) => (
@@ -223,13 +248,13 @@ function CatalogView({ category }: { category: string }) {
             {result && !visible.length && (
               <div className="catalog-empty">
                 <h2>No encontramos productos</h2>
-                <p>Esta categoría aún no tiene productos disponibles.</p>
+                <p>Prueba con otros filtros.</p>
               </div>
             )}
             {result && (
               <Pagination
                 page={page + 1}
-                pages={result.totalPages}
+                pages={Math.ceil(filtered.length / size)}
                 onChange={changePage}
                 label="Páginas de productos"
               />

@@ -16,14 +16,14 @@ export const clothingPath = '/productos/ropa-y-accesorios';
 
 // Imágenes de las tarjetas de categoría del Home, por slug.
 export const categoryImages: Record<string, string> = {
-  alimentos: '/img/figma/categories-imgFrame1415.png',
-  'cuidado-personal': '/img/figma/categories-imgFrame1416.png',
-  'huerto-y-jardineria': '/img/figma/categories-imgFrame1417.png',
-  'limpieza-del-hogar': '/img/figma/categories-imgFrame1418.png',
-  'aromas-y-bienestar': '/img/figma/categories-imgFrame1419.png',
-  'ropa-y-accesorios': '/img/figma/categories-imgFrame1420.png',
-  mascotas: '/img/figma/categories-imgFrame1421.png',
-  'decoracion-y-artesania': '/img/figma/categories-imgFrame1422.png',
+  alimentos: '/img/hito3/category-alimentos.png',
+  'cuidado-personal': '/img/hito3/category-cuidado-personal.png',
+  'huerto-y-jardineria': '/img/hito3/category-huerto-y-jardineria.png',
+  'limpieza-del-hogar': '/img/hito3/category-limpieza-del-hogar.png',
+  'aromas-y-bienestar': '/img/hito3/category-aromas-y-bienestar.png',
+  'ropa-y-accesorios': '/img/hito3/category-ropa-y-accesorios.png',
+  mascotas: '/img/hito3/category-mascotas.png',
+  'decoracion-y-artesania': '/img/hito3/category-decoracion-y-artesania.png',
 };
 
 // Nombres del backend cuyo slug no coincide con las rutas existentes del frontend.

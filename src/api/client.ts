@@ -40,6 +40,7 @@ export type ApiProduct = {
   greenPoints: number;
   rating: number | null;
   reviewCount: number;
+  attributes?: string[];
   primaryImageFileId: string | null;
 };
 
