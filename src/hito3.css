@@ -159,7 +159,6 @@
 
 .hito-card.shop-card {
   container-type: inline-size;
-  aspect-ratio: 277 / 424;
   min-width: 0;
   padding: clamp(8px, 0.77cqw, 11px);
   background: #fff;
