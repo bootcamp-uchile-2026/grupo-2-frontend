@@ -21,11 +21,11 @@ El catálogo consulta `GET /products` en el backend compartido. Envía `category
 
 Las tarjetas del catálogo y las fichas abiertas desde él muestran fotos locales por producto. Cuando no hay una foto asignada, se elige una referencia de la misma categoría y se marca como ilustrativa. El registro de fotografías de referencia está en [scripts/product-photo-sources.json](scripts/product-photo-sources.json).
 
-| Variable                | Valor por defecto             | Uso                                                                                                                                  |
-| ----------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `VITE_PRODUCTS_API_URL` | `http://159.112.150.143:3004` | URL base de `GET /products`. Si se define `VITE_API_URL`, hereda ese valor salvo que se configure una URL específica para productos. |
-| `VITE_API_URL`          | `/api`                        | URL base del cliente de API. En desarrollo, Vite redirige `/api` a la API simulada.                                                  |
-| `API_PORT`              | `3100`                        | Puerto de la API simulada y destino del proxy de desarrollo.                                                                         |
+| Variable                | Valor por defecto                                                 | Uso                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `VITE_PRODUCTS_API_URL` | `/api` en producción, `http://159.112.150.143:3004` en desarrollo | URL base de `GET /products`. Si se define `VITE_API_URL`, hereda ese valor salvo que se configure una URL específica para productos. |
+| `VITE_API_URL`          | `/api`                                                            | URL base del cliente de API. En desarrollo, Vite redirige `/api` a la API simulada.                                                  |
+| `API_PORT`              | `3100`                                                            | Puerto de la API simulada y destino del proxy de desarrollo.                                                                         |
 
 Para usar el catálogo simulado cuando el backend compartido no esté disponible, crea un archivo `.env.local` con esta línea y reinicia Vite.
 
@@ -96,7 +96,7 @@ Después de editar código, ejecuta `npm run format` y `npm run format:check`. L
 
 ## Publicación
 
-Publica el contenido de `dist/` y configura el hosting para servir `index.html` al abrir directamente una ruta de React Router, como `/productos/aromas-y-bienestar`. Si el sitio usa HTTPS, configura `VITE_PRODUCTS_API_URL` antes de compilar con una URL HTTPS o la ruta de un proxy del mismo sitio. El backend compartido usa HTTP. El proxy de Vite funciona en desarrollo. Para usar `/api` en el sitio publicado, esa ruta debe estar configurada en el hosting.
+Publica el contenido de `dist/`. En Netlify, `public/_redirects` configura el proxy de `/api` al backend compartido y sirve `index.html` para las rutas de React Router, como `/productos/aromas-y-bienestar`. Si configuras las variables `VITE_PRODUCTS_API_URL` o `VITE_API_URL` en Netlify, usa `/api` para pasar por el proxy. En otro hosting, configura un proxy equivalente o proporciona una URL HTTPS para la API antes de compilar.
 
 ## Licencia
 

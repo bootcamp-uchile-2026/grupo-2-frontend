@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? '/api';
 const PRODUCTS_API_URL =
   import.meta.env.VITE_PRODUCTS_API_URL ??
   import.meta.env.VITE_API_URL ??
-  'http://159.112.150.143:3004';
+  (import.meta.env.PROD ? '/api' : 'http://159.112.150.143:3004');
 
 export type SortDirection = 'ASC' | 'DESC';
 
