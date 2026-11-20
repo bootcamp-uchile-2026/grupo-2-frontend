@@ -845,14 +845,21 @@ export const products: Product[] = [
   })),
 ];
 
+// El catálogo del backend incluye el formato en el nombre de la miel.
+export function localProductName(name: string) {
+
+  return name === 'Miel de Ulmo Artesanal 500 g' ? 'Miel de Ulmo' : name;
+}
+
 export const money = (n: number) => '$' + n.toLocaleString('es-CL');
 
-export const productUrl = (p: { name: string; department?: string }) => '/productos/' +
+export const productUrl = (p: { name: string; department?: string; productId?: number; }) => '/productos/' +
   (p.department ??
     products.find((product) => product.name === p.name)?.department ??
     'ropa-y-accesorios') +
   '/producto?name=' +
-  encodeURIComponent(p.name);
+  encodeURIComponent(p.name) +
+  (p.productId === undefined ? '' : '&id=' + p.productId);
 
 export const variantOptions = (value: string) => value
     .split(',')

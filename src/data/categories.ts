@@ -1,17 +1,47 @@
 export const categories = [
-  { id: 'alimentos', name: 'Alimentos', icon: 'apple' },
-  { id: 'cuidado-personal', name: 'Cuidado personal', icon: 'bottle' },
-  { id: 'huerto-y-jardineria', name: 'Huerto y jardinería', icon: 'plant' },
-  { id: 'limpieza-del-hogar', name: 'Limpieza del hogar', icon: 'clean' },
-  { id: 'aromas-y-bienestar', name: 'Aromas y bienestar', icon: 'candle' },
-  { id: 'ropa-y-accesorios', name: 'Ropa y accesorios', icon: 'shirt' },
-  { id: 'mascotas', name: 'Mascotas', icon: 'paw' },
+  { id: 'alimentos', apiId: 1, name: 'Alimentos', icon: 'apple' },
+  {
+    id: 'cuidado-personal',
+    apiId: 2,
+    name: 'Cuidado personal',
+    icon: 'bottle',
+  },
+  {
+    id: 'huerto-y-jardineria',
+    apiId: 3,
+    name: 'Huerto y jardinería',
+    icon: 'plant',
+  },
+  {
+    id: 'limpieza-del-hogar',
+    apiId: 4,
+    name: 'Limpieza del hogar',
+    icon: 'clean',
+  },
+  {
+    id: 'aromas-y-bienestar',
+    apiId: 5,
+    name: 'Aromas y bienestar',
+    icon: 'candle',
+  },
+  {
+    id: 'ropa-y-accesorios',
+    apiId: 6,
+    name: 'Ropa y accesorios',
+    icon: 'shirt',
+  },
+  { id: 'mascotas', apiId: 7, name: 'Mascotas', icon: 'paw' },
   {
     id: 'decoracion-y-artesania',
+    apiId: 8,
     name: 'Decoración y artesanía',
     icon: 'vase',
   },
 ];
+export const productCategorySlugs: Record<number, string> = Object.fromEntries(
+  categories.map(({ apiId, id }) => [apiId, id]),
+);
+
 export const clothingPath = '/productos/ropa-y-accesorios';
 
 // Imágenes de las tarjetas de categoría del Home, por slug.

@@ -4,6 +4,7 @@ import { products, quickSelection } from '../data/products';
 
 export type CartItem = {
   name: string;
+  productId?: number;
   price: number;
   size: string;
   color: string;
@@ -76,7 +77,8 @@ export const cartStore = createStore<CartState>()((set, get) => {
       setCart((cart) => {
 
         const found = cart.find(
-          (p) => p.name === item.name &&
+          (p) => p.productId === item.productId &&
+            p.name === item.name &&
             p.price === item.price &&
             p.size === item.size &&
             p.color === item.color,
@@ -96,10 +98,7 @@ export const cartStore = createStore<CartState>()((set, get) => {
       set({ message });
 
       if (message) {
-        notificationTimer = setTimeout(
-          () => set({ message: '' }),
-          message.startsWith('¡Bienvenida') ? 2000 : 2200,
-        );
+        notificationTimer = setTimeout(() => set({ message: '' }), 2200);
       }
     },
   };

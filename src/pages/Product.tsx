@@ -2,15 +2,90 @@ import { BannerImage } from '../components/BannerImage';
 import { GreenFootprint } from '../components/GreenFootprint';
 import { findHitoProduct, hitoAsset, sustainabilityGroups } from '../data/hito3';
 import { ProductImage } from '../components/ProductImage';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams, useParams } from 'react-router-dom';
-import { products, money, productAttributes, variantOptions } from '../data/products';
+import { products, localProductName, money, productAttributes, variantOptions } from '../data/products';
 import { useCart } from '../store/cart';
 import { Featured } from '../components/Featured';
 import { EmptyState } from '../components/EmptyState';
-import { categories } from '../data/categories';
+import { categories, productCategorySlugs } from '../data/categories';
+import { getAllProducts } from '../api/client';
+import type { ApiProduct } from '../api/client';
 
 export function Product() {
+
+  const [params] = useSearchParams();
+  const { category } = useParams();
+  const name = params.get('name') || 'Polera Aurora';
+  const id = params.get('id');
+
+  return id === null ? (
+    <ProductView key={category + '/' + name} />
+  ) : (
+    <CatalogProductView
+      key={category + '/' + name + '/' + id}
+      id={Number(id)}
+      name={name}
+      category={category}
+    />
+  );
+}
+
+function CatalogProductView({ id, name, category, }: { id: number; name: string; category?: string; }) {
+
+  const [product, setProduct] = useState<ApiProduct | null>();
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+
+    const controller = new AbortController();
+
+    getAllProducts({ search: name }, controller.signal)
+      .then((products) => {
+
+        if (controller.signal.aborted) return;
+
+        setProduct(
+          products.find(
+            (entry) => entry.id === id &&
+              productCategorySlugs[entry.categoryId] === category,
+          ) ?? null,
+        );
+      })
+      .catch((cause) => {
+
+        if (!controller.signal.aborted) setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [id, name, category]);
+
+  if (error)
+    return (
+      <main className="product-view">
+        <p role="alert">{error}</p>
+      </main>
+    );
+
+  if (product === undefined)
+    return (
+      <main className="product-view">
+        <p role="status">Cargando producto…</p>
+      </main>
+    );
+
+  if (!product)
+    return (
+      <EmptyState
+        title="Producto no encontrado"
+        description="Este producto ya no aparece en el catálogo."
+      />
+    );
+
+  return <ProductView remote={product} />;
+}
+
+function ProductView({ remote }: { remote?: ApiProduct }) {
 
   const [params] = useSearchParams(),
     navigate = useNavigate();
@@ -20,12 +95,15 @@ export function Product() {
   const notify = useCart((state) => state.notify);
   const { category = 'ropa-y-accesorios' } = useParams();
   const selectedCategory = categories.find((item) => item.id === category);
-  const name = params.get('name') || 'Polera Aurora';
-  const product = products.find((p) => p.name === name);
-  const details = findHitoProduct(name);
-  const productTags = productAttributes(name);
+  const name = remote?.name ?? (params.get('name') || 'Polera Aurora');
+  const localName = localProductName(name);
+  const product = products.find((p) => p.name === localName);
+  const details = findHitoProduct(localName);
+  const productTags = productAttributes(localName, remote?.attributes);
   const montana = details?.image === 'montana';
-  const available = details?.available ?? true;
+  const available = remote?.available ?? details?.available ?? true;
+  const rating = remote ? remote.rating : (details?.rating ?? 4.5);
+  const discount = remote?.discountPercentage ?? product?.discount;
   const gallery = montana
     ? [1, 2, 3, 4].map((index) => hitoAsset(`montana-${index}.png`))
     : [];
@@ -35,9 +113,14 @@ export function Product() {
   const colors = variantOptions(product?.color || 'Natural');
   const sizes = variantOptions(product?.size || 'Única');
   const price =
-    product?.price || (name === 'Bolsa reutilizable' ? 8990 : 13990);
+    remote?.finalPrice ??
+    product?.price ??
+    (name === 'Bolsa reutilizable' ? 8990 : 13990);
   const edit = params.has('edit') ? Number(params.get('edit')) : -1;
-  const item = cart[edit]?.name === name ? cart[edit] : undefined;
+  const item =
+    cart[edit]?.name === name && cart[edit]?.productId === remote?.id
+      ? cart[edit]
+      : undefined;
   const initialColor =
     colors.find(
       (value) => value.toLowerCase() === item?.color?.toLowerCase(),
@@ -72,19 +155,21 @@ export function Product() {
       add(
         {
           name,
+          productId: remote?.id,
           price,
           color,
           size,
-          co2Avoided: details?.co2Avoided,
-          greenPoints: details?.greenPoints,
+          co2Avoided: remote?.co2Avoided ?? details?.co2Avoided,
+          greenPoints: remote?.greenPoints ?? details?.greenPoints,
         },
         qty,
       );
   }
 
   if (
-    (!product && name !== 'Bolsa reutilizable') ||
-    (product && product.department !== category) ||
+    (!remote &&
+      ((!product && name !== 'Bolsa reutilizable') ||
+        (product && product.department !== category))) ||
     !selectedCategory
   )
     return (
@@ -131,6 +216,8 @@ export function Product() {
             <ProductImage
               key={photo ?? name}
               source={photo}
+              category={remote ? category : undefined}
+              productId={remote?.id}
               name={name}
               className={montana ? 'main-image hito-montana' : 'main-image'}
               priority
@@ -140,16 +227,21 @@ export function Product() {
             <h1 className="product-name">{name}</h1>
             <div className="price">
               {money(price)}{' '}
-              {!!product?.discount && (
-                <span className="card-discount">−{product.discount}%</span>
+              {!!discount && (
+                <span className="card-discount">−{discount}%</span>
               )}
             </div>
             <p className="product-description">
               {product?.description ||
-                'Bolsa reutilizable para acompañar tus compras cotidianas.'}
+                (remote
+                  ? remote.producerName
+                  : 'Bolsa reutilizable para acompañar tus compras cotidianas.')}
             </p>
-            {!!productTags.length && (
-              <dl className="hito-attribute-groups">
+            {productTags.length > 0 && (
+              <dl
+                className="hito-attribute-groups"
+                aria-label="Atributos sustentables"
+              >
                 {Object.entries(sustainabilityGroups).map(
                   ([group, attributes]) => {
 
@@ -241,7 +333,19 @@ export function Product() {
                 Comprar ahora
               </button>
             )}
-            <GreenFootprint items={[{ name, price, color, size, qty }]} />
+            <GreenFootprint
+              items={[
+                {
+                  name,
+                  price,
+                  color,
+                  size,
+                  qty,
+                  co2Avoided: remote?.co2Avoided,
+                  greenPoints: remote?.greenPoints,
+                },
+              ]}
+            />
           </div>
         </section>
         <section className="tabs">
@@ -263,31 +367,39 @@ export function Product() {
             <p>
               {product
                 ? `Material principal: ${product.material}. Presentación: ${product.size}.`
-                : 'Diseño pensado para reutilizar.'}
+                : remote
+                  ? 'Información de materiales no disponible.'
+                  : 'Diseño pensado para reutilizar.'}
             </p>
           </div>
           <div className="tab-panel" hidden={tab !== 'elaboracion'}>
             <h2>Elaboración</h2>
             <p>
               {product?.production ||
-                'Producto reutilizable para el uso cotidiano.'}
+                (remote
+                  ? 'Información de elaboración no disponible.'
+                  : 'Producto reutilizable para el uso cotidiano.')}
             </p>
           </div>
           <div className="tab-panel" hidden={tab !== 'valoraciones'}>
             <div className="rating-content">
               <div>
-                <div className="rating-score">{details?.rating ?? 4.5}</div>
+                <div className="rating-score">
+                  {rating ?? 'Sin valoraciones'}
+                </div>
                 <div
                   className="stars"
                   style={{ textAlign: 'center', fontSize: 28 }}
                 >
-                  {'★'.repeat(Math.floor(details?.rating ?? 4.5)) +
-                    '☆'.repeat(5 - Math.floor(details?.rating ?? 4.5))}
+                  {rating !== null &&
+                    '★'.repeat(Math.floor(rating)) +
+                      '☆'.repeat(5 - Math.floor(rating))}
                 </div>
                 <p>Calificación sustentable</p>
               </div>
               <div>
-                {(!details || montana) &&
+                {!remote &&
+                  (!details || montana) &&
                   [
                     isClothing
                       ? 'Muy cómoda y con excelente terminación. La información de impacto es clara.'

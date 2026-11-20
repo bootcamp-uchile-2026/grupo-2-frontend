@@ -8,7 +8,7 @@ export function BannerImage({ category, priority = false, }: { category: string;
 
   return (
     <img
-      className="banner-image"
+      className={`banner-image banner-image--${category}`}
       src={photo.src ?? `/img/banners/${category}.jpg?v=${photo.id}`}
       alt={photo.alt}
       style={{ objectPosition: photo.position }}

@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
 import { Pagination } from '../components/Pagination';
-import { getCategories, getProducts } from '../api/client';
-import type { ApiCategory, ApiProduct, ProductQuery } from '../api/client';
-import { categorySlug } from '../data/categories';
+import { getAllProducts } from '../api/client';
+import type { ApiProduct, ProductQuery } from '../api/client';
+import { categories } from '../data/categories';
 import { CatalogFilters } from '../components/CatalogFilters';
 import { defaultFilters, matchesVariants } from '../data/catalogFilters';
 import type { Filters } from '../data/catalogFilters';
-import { productAttributes } from '../data/products';
+import { localProductName, productAttributes } from '../data/products';
 
-const size = 12;
+const size = 20;
 
 // Campos de ordenamiento autorizados por GET /products.
 const sortParams: Record<
@@ -37,8 +37,6 @@ function CatalogView({ category }: { category: string }) {
 
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const [categories, setCategories] = useState<ApiCategory[]>([]);
-  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [result, setResult] = useState<ApiProduct[] | null>(null);
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
@@ -48,23 +46,25 @@ function CatalogView({ category }: { category: string }) {
     offers: params.get('ofertas') === '1',
   }));
   const [draft, setDraft] = useState<Filters>(filters);
-  const selected = categories.find(
-    (entry) => categorySlug(entry.name) === category,
-  );
-  const categoryId = selected?.id;
-  const missing = categoriesLoaded && Boolean(category) && !selected;
+  const selected = categories.find((entry) => entry.id === category);
+  const categoryId = selected?.apiId;
+  const missing = Boolean(category) && categoryId === undefined;
   const sort = filters.sort;
 
   useEffect(() => {
 
+    if (missing) return;
+
     const controller = new AbortController();
 
-    getCategories({ size: 100 }, controller.signal)
-      .then(({ content }) => {
+    getAllProducts({ categoryId, size, ...sortParams[sort] }, controller.signal)
+      .then((products) => {
 
-        setCategories(content);
+        if (controller.signal.aborted) return;
 
-        setCategoriesLoaded(true);
+        setError('');
+
+        setResult(products);
       })
       .catch((cause) => {
 
@@ -72,41 +72,7 @@ function CatalogView({ category }: { category: string }) {
       });
 
     return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-
-    if (category && categoryId === undefined) return;
-
-    const controller = new AbortController();
-    const request = { size: 100, categoryId, ...sortParams[sort] };
-
-    async function load() {
-
-      const first = await getProducts(request, controller.signal);
-      const remaining = await Promise.all(
-        Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, index) => getProducts({ ...request, page: index + 1 }, controller.signal),
-        ),
-      );
-
-      if (!controller.signal.aborted) {
-        setError('');
-
-        setResult(
-          first.content.concat(
-            remaining.flatMap((response) => response.content),
-          ),
-        );
-      }
-    }
-
-    load().catch((cause) => {
-
-      if (!controller.signal.aborted) setError(cause.message);
-    });
-
-    return () => controller.abort();
-  }, [category, categoryId, sort]);
+  }, [categoryId, missing, sort]);
 
   function apply(next: Filters) {
 
@@ -136,11 +102,12 @@ function CatalogView({ category }: { category: string }) {
         (!filters.offers || product.finalPrice < product.price) &&
         (filters.maxPrice === defaultFilters.maxPrice ||
           product.finalPrice <= filters.maxPrice) &&
-        filters.attributes.every((attribute) => productAttributes(product.name, product.attributes).includes(
-            attribute,
-          ),
+        filters.attributes.every((attribute) => productAttributes(
+            localProductName(product.name),
+            product.attributes,
+          ).includes(attribute),
         ) &&
-        matchesVariants(product.name, filters),
+        matchesVariants(localProductName(product.name), filters),
     ) ?? [];
   const visible = filtered.slice(page * size, (page + 1) * size);
 
@@ -152,15 +119,6 @@ function CatalogView({ category }: { category: string }) {
         to="/#categorias"
         action="Ver categorías"
       />
-    );
-
-  if (category && !selected)
-    return (
-      <main className="catalog-page">
-        <p role={error ? 'alert' : 'status'}>
-          {error || 'Cargando categoría…'}
-        </p>
-      </main>
     );
 
   return (
