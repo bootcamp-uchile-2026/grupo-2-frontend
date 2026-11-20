@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "format": "node scripts/format.mjs",
     "format:check": "node scripts/format.mjs --check",
-    "test": "node --test scripts/ux-ui.test.mjs"
+    "test": "node --test scripts/ux-ui.test.mjs",
+    "api:json-server": "json-server server/db.json-server.json --host 127.0.0.1 --port 3101"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.3.0",

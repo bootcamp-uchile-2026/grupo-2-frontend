@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ProductImage } from './ProductImage';
 import { findHitoProduct, hitoAsset, sustainabilityGroups } from '../data/hito3';
-import { money, productAttributes, productUrl, quickSelection } from '../data/products';
+import { localProductName, money, productAttributes, productUrl, quickSelection } from '../data/products';
 import type { Product } from '../data/products';
 import { useCart } from '../store/cart';
 import type { CartItem } from '../store/cart';
@@ -23,17 +23,18 @@ const groupTones = {
   'Ético y productivo': 'cream',
 } as const;
 
-const attributeGroups = Object.fromEntries(
-  Object.entries(sustainabilityGroups).flatMap(([group, attributes]) => attributes.map((attribute) => [
-      attribute,
-      group as keyof typeof groupTones,
-    ]),
+const attributeGroups = new Map(
+  Object.entries(sustainabilityGroups).flatMap(([group, labels]) => labels.map(
+      (label) => [label, group as keyof typeof sustainabilityGroups] as const,
+    ),
   ),
 );
 
 type CardProps = {
   name: string;
   price: number;
+  href?: string;
+  category?: string;
   available: boolean;
   rating: number | null;
   discount?: number;
@@ -41,20 +42,27 @@ type CardProps = {
   selection: Omit<CartItem, 'qty'>;
 };
 
-export function ShopCard({ name, price, available, rating, discount, attributes = [], selection, }: CardProps) {
+export function ShopCard({ name, price, href = productUrl({ name }), category, available, rating, discount, attributes = [], selection, }: CardProps) {
 
   const add = useCart((state) => state.add);
   const favorite = useFavorites((state) => state.names.includes(name));
   const toggle = useFavorites((state) => state.toggle);
+  const badges = attributes
+    .filter((attribute) => attributeGroups.has(attribute))
+    .slice(0, 2);
   const stars = Math.max(0, Math.min(5, Math.round(rating ?? 0)));
 
   return (
     <article className="catalog-product shop-card hito-card">
       <div
-        className={`hito-card-media${findHitoProduct(name) ? '' : ' hito-card-photo'}`}
+        className={`hito-card-media${category || !findHitoProduct(localProductName(name)) ? ' hito-card-photo' : ''}`}
       >
-        <Link to={productUrl({ name })} aria-label={name}>
-          <ProductImage name={name} />
+        <Link to={href} aria-label={name}>
+          <ProductImage
+            name={name}
+            category={category}
+            productId={selection.productId}
+          />
         </Link>
         <button
           type="button"
@@ -77,7 +85,7 @@ export function ShopCard({ name, price, available, rating, discount, attributes 
       </div>
       <div className="hito-card-heading">
         <h2>
-          <Link to={productUrl({ name })}>{name}</Link>
+          <Link to={href}>{name}</Link>
         </h2>
         {rating !== null && (
           <span
@@ -99,19 +107,19 @@ export function ShopCard({ name, price, available, rating, discount, attributes 
         {money(price)}
         {!!discount && <span className="card-discount">−{discount}%</span>}
       </p>
-      {!!attributes.length && (
+      {badges.length > 0 && (
         <ul className="hito-attributes" aria-label="Atributos sustentables">
-          {attributes.slice(0, 2).map((label) => {
+          {badges.map((label) => {
 
+            const group = attributeGroups.get(label);
             const icon = attributeIcons[label];
-            const group = attributeGroups[label];
 
             return (
               <li key={label} className={group && groupTones[group]}>
                 {icon && <img src={hitoAsset(icon + '.svg')} alt="" />}
                 <span>
                   <strong>{label}</strong>
-                  {group && <small>{group}</small>}
+                  <small>{group}</small>
                 </span>
               </li>
             );

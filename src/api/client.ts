@@ -1,7 +1,8 @@
-// Cliente de la API. Por ahora consume la API simulada (server/index.mjs), que replica el contrato
-// de grupo-2-backend: GET /products, GET /categories, GET /categories/:categoryId y POST /auth/login.
-// Vite redirige /api a la API simulada (ver vite.config.ts); las pruebas usan VITE_API_URL.
 const API_URL = import.meta.env.VITE_API_URL ?? '/api';
+const PRODUCTS_API_URL =
+  import.meta.env.VITE_PRODUCTS_API_URL ??
+  import.meta.env.VITE_API_URL ??
+  'http://159.112.150.143:3004';
 
 export type SortDirection = 'ASC' | 'DESC';
 
@@ -104,12 +105,12 @@ function errorMessage(body: unknown, status: number) {
   return status >= 502 ? connectionError : 'Ocurrió un error inesperado.';
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>( path: string, init?: RequestInit, baseUrl = API_URL, ): Promise<T> {
 
   let response: Response;
 
   try {
-    response = await fetch(API_URL + path, {
+    response = await fetch(baseUrl.replace(/\/+$/, '') + path, {
       ...init,
       headers: {
         Accept: 'application/json',
@@ -156,7 +157,20 @@ export function getProducts( { page = 0, size = 12, sortBy, sortDirection, searc
         producerId,
       }),
     { signal },
+    PRODUCTS_API_URL,
   );
+}
+
+export async function getAllProducts( params: ProductQuery, signal?: AbortSignal, ) {
+
+  const request = { size: 100, ...params, page: 0 };
+  const first = await getProducts(request, signal);
+  const remaining = await Promise.all(
+    Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, index) => getProducts({ ...request, page: index + 1 }, signal),
+    ),
+  );
+
+  return first.content.concat(remaining.flatMap(({ content }) => content));
 }
 
 export function getCategories( { page = 0, size = 20, sortBy, sortDirection }: CategoryQuery = {}, signal?: AbortSignal, ) {

@@ -8,7 +8,6 @@ import { selectCartCount, useCart } from '../store/cart';
 import { money, products, quickSelection } from '../data/products';
 import { AuthForm } from './AuthForm';
 import { Modal } from './Modal';
-import { WelcomeBanner } from './WelcomeBanner';
 
 export function Layout({ layer, setLayer, }: { layer: string; setLayer: (layer: string) => void; }) {
 
@@ -19,8 +18,6 @@ export function Layout({ layer, setLayer, }: { layer: string; setLayer: (layer: 
   const message = useCart((state) => state.message);
   const notify = useCart((state) => state.notify);
   const location = useLocation();
-  const isHome = location.pathname === '/';
-  const showToast = message && !(isHome && message.startsWith('¡Bienvenida'));
 
   useEffect(() => {
 
@@ -41,7 +38,6 @@ export function Layout({ layer, setLayer, }: { layer: string; setLayer: (layer: 
         <Outlet />
         <Footer />
       </div>
-      {isHome && !location.hash && <WelcomeBanner key={location.key} />}
       {layer === 'cart' && (
         <Modal title={`Tu carrito (${count})`} onClose={() => setLayer('')}>
           <div className="drawer-content">
@@ -151,16 +147,8 @@ export function Layout({ layer, setLayer, }: { layer: string; setLayer: (layer: 
           />
         </Modal>
       )}
-      <div
-        className={`toast${showToast ? ' show' : ''}${message.startsWith('¡Bienvenida') ? ' welcome-toast' : ''}`}
-        role="status"
-      >
-        {showToast ? message : ''}
-        {showToast && message.startsWith('¡Bienvenida') && (
-          <button aria-label="Cerrar bienvenida" onClick={() => notify('')}>
-            ×
-          </button>
-        )}
+      <div className={`toast${message ? ' show' : ''}`} role="status">
+        {message}
       </div>
     </>
   );

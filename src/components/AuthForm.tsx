@@ -41,17 +41,13 @@ export function AuthForm({ destination = '/mi-cuenta/compras', guest = false, }:
     setError('');
 
     try {
-      const profile = creating
-        ? await register(
-            String(data.get('name')),
-            String(data.get('email')),
-            password,
-          )
-        : await login(String(data.get('email')), password);
-
-      notify(
-        `¡Bienvenida, ${profile.name}! Tienes ${profile.points.toLocaleString('es-CL')} Puntos Verdes disponibles.`,
-      );
+      if (creating)
+        await register(
+          String(data.get('name')),
+          String(data.get('email')),
+          password,
+        );
+      else await login(String(data.get('email')), password);
 
       navigate(destination);
     } catch (cause) {

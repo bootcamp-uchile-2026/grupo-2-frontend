@@ -68,8 +68,6 @@ export async function passwordHash(password: string, salt: string) {
 
 export const passwordValid = (password: string) => password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 
-export const demoAccountSummary = { name: 'Samanta', points: 30000 };
-
 // Cliente de prueba creado por las migraciones de grupo-2-backend (también existe en la API simulada).
 export const demoCredentials = {
   email: 'maria@buenorigen.test',

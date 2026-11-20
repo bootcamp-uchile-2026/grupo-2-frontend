@@ -4,6 +4,7 @@ import { products, quickSelection } from '../data/products';
 
 export type CartItem = {
   name: string;
+  productId?: number;
   price: number;
   size: string;
   color: string;
@@ -76,7 +77,8 @@ export const cartStore = createStore<CartState>()((set, get) => {
       setCart((cart) => {
 
         const found = cart.find(
-          (p) => p.name === item.name &&
+          (p) => p.productId === item.productId &&
+            p.name === item.name &&
             p.price === item.price &&
             p.size === item.size &&
             p.color === item.color,
@@ -96,10 +98,7 @@ export const cartStore = createStore<CartState>()((set, get) => {
       set({ message });
 
       if (message) {
-        notificationTimer = setTimeout(
-          () => set({ message: '' }),
-          message.startsWith('¡Bienvenida') ? 2000 : 2200,
-        );
+        notificationTimer = setTimeout(() => set({ message: '' }), 2200);
       }
     },
   };
@@ -124,6 +123,36 @@ cartStore.subscribe(({ cart }, previous) => {
 export function useCart<T>(selector: (state: CartState) => T) {
 
   return useStore(cartStore, selector);
+}
+
+export const selectCartCount = ({ cart }: CartState) => cart.reduce((count, item) => count + item.qty, 0);
+
+export const selectCartTotal = ({ cart }: CartState) => cart.reduce((total, item) => total + item.price * item.qty, 0);
+
+export function cartFootprint(items: CartItem[]) {
+
+  const impact = items.map((item) => {
+
+    const product = products.find(({ name }) => name === item.name);
+
+    return {
+      co2: item.co2Avoided ?? product?.co2Avoided,
+      points: item.greenPoints ?? product?.greenPoints,
+      ...item,
+    };
+  });
+
+  return {
+    co2: impact.some(({ co2 }) => co2 === undefined)
+      ? null
+      : impact.reduce((total, { co2, qty }) => total + (co2 ?? 0) * qty, 0),
+    points: Math.floor(
+      impact.reduce(
+        (total, { points, price, qty }) => total + (points ?? price / 100) * qty,
+        0,
+      ),
+    ),
+  };
 }
 
 export const selectCartCount = ({ cart }: CartState) => cart.reduce((count, item) => count + item.qty, 0);

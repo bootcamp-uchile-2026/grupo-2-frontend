@@ -428,20 +428,33 @@ test('Todos los productos tienen una fotografía local y texto alternativo', asy
   }
 });
 
-test('La tarjeta del catálogo enlaza a la ficha con variantes y conserva la fotografía', async () => {
+test('La tarjeta del catálogo enlaza a la ficha con variantes y muestra la foto del producto', async () => {
   const product = products.find((product) => product.name === 'Polera Aurora');
   const source = productImages[product.name].src;
   const { content } = await getProducts({ search: product.name });
-  const card = render(CatalogProductCard, '/', '*', {
-    product: content.find((item) => item.name === product.name),
-  });
+  const apiProduct = content.find((item) => item.name === product.name);
+  const card = render(CatalogProductCard, '/', '*', { product: apiProduct });
   const href = card.match(/<a\s[^>]*href="([^"]+)"/)?.[1];
-  assert.equal(href, productUrl(product));
-  const detail = render(Product, href, '/productos/:category/producto');
+  assert.equal(
+    href,
+    productUrl({ ...product, productId: apiProduct.id }).replace('&', '&amp;'),
+  );
+  const detail = render(
+    Product,
+    productUrl(product),
+    '/productos/:category/producto',
+  );
   assert.match(detail, /TALLA/);
   assert.match(detail, /COLOR/);
   assert.match(detail, /<select/);
   assert.match(detail, /Agregar a carrito/i);
+  const withoutAttributes = render(CatalogProductCard, '/', '*', {
+    product: { ...apiProduct, attributes: [] },
+  });
+  assert.doesNotMatch(
+    withoutAttributes,
+    /Atributos sustentables|Sin información/,
+  );
   assert.ok(card.includes(`src="${source}"`));
   assert.ok(detail.includes(`src="${source}"`));
 });

@@ -1,9 +1,7 @@
 import { money } from '../data/products';
 import { sustainabilityGroups } from '../data/hito3';
-import { categorySlug } from '../data/categories';
 import { filterOptions, productTypesFor, sorts } from '../data/catalogFilters';
 import type { Filters } from '../data/catalogFilters';
-import type { ApiCategory } from '../api/client';
 
 const labels = {
   gender: 'Género',
@@ -12,7 +10,7 @@ const labels = {
   material: 'Materiales',
 };
 
-export function CatalogFilters({ category, categories, draft, change, selectCategory, apply, clear, }: { category: string; categories: ApiCategory[]; draft: Filters; change: (filters: Filters) => void; selectCategory: (category: string) => void; apply: () => void; clear: () => void; }) {
+export function CatalogFilters({ category, categories, draft, change, selectCategory, apply, clear, }: { category: string; categories: { id: string; name: string }[]; draft: Filters; change: (filters: Filters) => void; selectCategory: (category: string) => void; apply: () => void; clear: () => void; }) {
 
   const productTypes = productTypesFor(category);
   const variants = draft.type ? filterOptions(category, draft.type) : null;
@@ -55,7 +53,7 @@ export function CatalogFilters({ category, categories, draft, change, selectCate
         >
           <option value="">Todas las categorías</option>
           {categories.map((entry) => (
-            <option key={entry.id} value={categorySlug(entry.name)}>
+            <option key={entry.id} value={entry.id}>
               {entry.name}
             </option>
           ))}
