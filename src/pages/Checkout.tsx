@@ -1,9 +1,11 @@
+import { GreenFootprint } from '../components/GreenFootprint';
+import { hitoAsset } from '../data/hito3';
 import { OrderConfirmation } from '../components/OrderConfirmation';
 import { ProductImage } from '../components/ProductImage';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../store/cart';
+import { cartFootprint, selectCartTotal, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import type { Order } from '../store/account';
 import { money, productLabels } from '../data/products';
@@ -35,7 +37,10 @@ function estimatedDelivery() {
 
 export function Checkout() {
 
-  const { cart, setCart, total, notify } = useCart();
+  const cart = useCart((state) => state.cart);
+  const setCart = useCart((state) => state.setCart);
+  const total = useCart(selectCartTotal);
+  const notify = useCart((state) => state.notify);
   const { user, placeOrder } = useAccount();
   const [noNumber, setNoNumber] = useState(false);
   const [shipment, setShipment] = useState('');
@@ -44,7 +49,8 @@ export function Checkout() {
   const [paymentError, setPaymentError] = useState('');
   const [decline, setDecline] = useState(false);
   const [completed, setCompleted] = useState<Order | null>(null);
-  const earnedPoints = Math.floor(total / 100);
+  const earnedPoints = cartFootprint(cart).points;
+  const [couponMessage, setCouponMessage] = useState('');
 
   function confirm(event: FormEvent<HTMLFormElement>, data: ShippingData) {
 
@@ -164,7 +170,14 @@ export function Checkout() {
             <section className="checkout-items">
               {cart.map((item, i) => (
                 <div className="order-item" key={i}>
-                  <ProductImage name={item.name} />
+                  <ProductImage
+                    name={item.name}
+                    source={
+                      item.name === 'Polerón Montana'
+                        ? hitoAsset('montana-cart.png')
+                        : undefined
+                    }
+                  />
                   <div>
                     <h3>{item.name}</h3>
                     <p>
@@ -175,6 +188,7 @@ export function Checkout() {
                   </div>
                 </div>
               ))}
+              <GreenFootprint items={cart} />
             </section>
             <ShippingForm
               confirm={confirm}
@@ -184,15 +198,15 @@ export function Checkout() {
             <div className="checkout-payment-grid">
               <section className="checkout-payment">
                 <div className="payment-method-panel">
-                  <h2>Método de Pago</h2>
+                  <h2 className="sr-only">Método de pago</h2>
                   <div className="payment-options">
                     {[
-                      'Tarjeta de crédito',
-                      'Tarjeta de débito',
-                      'PayPal',
-                      'Puntos Verdes',
-                    ].map((method) => (
+                      ['Webpay', 'webpay'],
+                      ['PayPal', 'paypal'],
+                      ['Puntos Verdes', 'green-points'],
+                    ].map(([method, logo]) => (
                       <label key={method}>
+                        <img src={hitoAsset(logo + '.png')} alt={method} />
                         <input
                           type="radio"
                           name="pay"
@@ -200,16 +214,9 @@ export function Checkout() {
                           checked={payment === method}
                           onChange={() => setPayment(method)}
                         />
-                        {method === 'Puntos Verdes'
-                          ? 'Canjear tus Puntos Verdes'
-                          : method}
                       </label>
                     ))}
                   </div>
-                </div>
-                <div className="points-preview">
-                  <strong>{earnedPoints} pts</strong>
-                  <span className="points-brand">🍃 Puntos Verdes</span>
                 </div>
                 <details className="demo-details">
                   <summary>Probar un error de pago</summary>
@@ -229,12 +236,21 @@ export function Checkout() {
                     ¿Tienes un cupón de descuento?
                   </label>
                   <div>
-                    <span aria-hidden="true">▦</span>
+                    <img src={hitoAsset('ticket.svg')} alt="" />
                     <input
                       id="checkout-coupon"
                       placeholder="Ingresa tu cupón"
+                      onChange={() => setCouponMessage('')}
+                      onBlur={(event) => {
+
+                        if (event.target.value.trim())
+                          setCouponMessage(
+                            'No hay un cupón válido para esta compra.',
+                          );
+                      }}
                     />
                   </div>
+                  {couponMessage && <p role="status">{couponMessage}</p>}
                 </div>
                 <h2>Resumen de la compra</h2>
                 <div className="summary-row">

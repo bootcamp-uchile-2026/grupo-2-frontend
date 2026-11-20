@@ -4,6 +4,8 @@ import { after, test } from 'node:test';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { createServer } from 'vite';
 
 const storage = new Map();
@@ -12,8 +14,20 @@ globalThis.localStorage = {
   setItem: (key, value) => storage.set(key, value),
 };
 
-const server = await createServer({ server: { middlewareMode: true } });
-const { CartContext, readItems } =
+// API simulada (server/index.mjs) en un puerto propio para las pruebas de fetch.
+const apiPort = String(3900 + Math.floor(Math.random() * 90));
+const api = spawn(process.execPath, ['server/index.mjs'], {
+  env: { ...process.env, API_PORT: apiPort },
+  stdio: ['ignore', 'pipe', 'inherit'],
+});
+await once(api.stdout, 'data');
+process.env.VITE_API_URL = `http://localhost:${apiPort}`;
+
+const server = await createServer({
+  configFile: false,
+  server: { middlewareMode: true, hmr: false },
+});
+const { cartStore, readItems, selectCartCount, selectCartTotal } =
   await server.ssrLoadModule('/src/store/cart.ts');
 const { AccountContext, passwordHash, passwordValid } =
   await server.ssrLoadModule('/src/store/account.ts');
@@ -66,15 +80,6 @@ test('La confirmación presenta método, dirección y entrega del pedido sin inv
   assert.ok(!html.includes('4321'));
   assert.ok(html.includes('no se realizan cobros ni se envían correos'));
 });
-const cart = {
-  cart: [],
-  count: 0,
-  total: 0,
-  message: '',
-  add: noop,
-  notify: noop,
-  setCart: noop,
-};
 const account = {
   user: null,
   orders: [],
@@ -94,19 +99,15 @@ function render( Component, route, routePattern = '*', props = {}, accountValue 
       MemoryRouter,
       { initialEntries: [route] },
       createElement(
-        CartContext.Provider,
-        { value: cart },
+        AccountContext.Provider,
+        { value: accountValue },
         createElement(
-          AccountContext.Provider,
-          { value: accountValue },
-          createElement(
-            Routes,
-            null,
-            createElement(Route, {
-              path: routePattern,
-              element: createElement(Component, props),
-            }),
-          ),
+          Routes,
+          null,
+          createElement(Route, {
+            path: routePattern,
+            element: createElement(Component, props),
+          }),
         ),
       ),
     ),
@@ -114,6 +115,7 @@ function render( Component, route, routePattern = '*', props = {}, accountValue 
 }
 
 after(async () => {
+  api.kill();
   await server.close();
 });
 
@@ -211,33 +213,152 @@ test('Un carrito corrupto no impide abrir la aplicación', () => {
   assert.deepEqual(readItems('bad-cart'), []);
 });
 
-const { Catalog } = await server.ssrLoadModule('/src/pages/Catalog.tsx');
+test('El store agrupa variantes, calcula totales y conserva el formato de eco-cart', () => {
+  const { add, notify, setCart } = cartStore.getState();
+  const item = {
+    name: 'Polera Aurora',
+    price: 13990,
+    size: 's',
+    color: 'negro',
+  };
+
+  try {
+    add(item, 2);
+    add(item);
+    add({ ...item, size: 'm' });
+
+    const expected = [
+      { ...item, qty: 3 },
+      { ...item, size: 'm', qty: 1 },
+    ];
+    const state = cartStore.getState();
+    assert.deepEqual(state.cart, expected);
+    assert.equal(selectCartCount(state), 4);
+    assert.equal(selectCartTotal(state), 55960);
+    assert.equal(state.message, 'Polera Aurora se agregó al carrito');
+    assert.deepEqual(readItems('eco-cart'), expected);
+
+    setCart((cart) => cart.slice(1));
+    assert.deepEqual(readItems('eco-cart'), expected.slice(1));
+    setCart([]);
+    assert.deepEqual(readItems('eco-cart'), []);
+  } finally {
+    notify('');
+    setCart([]);
+  }
+});
+
 const { products, productUrl, quickSelection } = await server.ssrLoadModule(
   '/src/data/products.ts',
 );
-const { categories } = await server.ssrLoadModule('/src/data/categories.ts');
+const { categories, categorySlug } = await server.ssrLoadModule(
+  '/src/data/categories.ts',
+);
 
-test('Cada categoría muestra exclusivamente sus propios productos', () => {
-  for (const category of categories) {
-    const own = products.filter(
-      (product) => product.department === category.id,
-    );
+const { getProducts, getCategories, getCategory, login, ApiError } =
+  await server.ssrLoadModule('/src/api/client.ts');
+const { CatalogProductCard } = await server.ssrLoadModule(
+  '/src/components/CatalogProductCard.tsx',
+);
+
+const { content: apiCategories } = await getCategories({ size: 100 });
+
+test('Cada categoría del backend corresponde a una ruta y muestra solo sus productos', async () => {
+  assert.deepEqual(
+    apiCategories.map((category) => categorySlug(category.name)).sort(),
+    categories.map((category) => category.id).sort(),
+  );
+  for (const category of apiCategories) {
+    const slug = categorySlug(category.name);
+    const own = products.filter((product) => product.department === slug);
     assert.ok(own.length >= 6, category.name);
-    const html = render(
-      Catalog,
-      `/productos/${category.id}`,
-      '/productos/:category',
+    const result = await getProducts({ categoryId: category.id, size: 100 });
+    assert.ok(
+      result.content.every((product) => product.categoryId === category.id),
     );
-    for (const product of own)
-      assert.ok(html.includes(product.name), product.name);
-    for (const product of products.filter(
-      (product) => product.department !== category.id,
-    ))
-      assert.ok(
-        !html.includes(product.name),
-        `${category.name}: producto ajeno ${product.name}`,
-      );
+    assert.deepEqual(
+      result.content.map((product) => product.name).sort(),
+      own.map((product) => product.name).sort(),
+      category.name,
+    );
   }
+});
+
+test('GET /products pagina desde 0 y ordena en el servidor', async () => {
+  const clothing = apiCategories.find(
+    (category) => categorySlug(category.name) === 'ropa-y-accesorios',
+  );
+  const first = await getProducts({ categoryId: clothing.id, size: 4 });
+  assert.equal(first.page, 0);
+  assert.equal(first.content.length, 4);
+  assert.equal(first.totalPages, Math.ceil(first.totalElements / 4));
+  const second = await getProducts({
+    categoryId: clothing.id,
+    page: 1,
+    size: 4,
+  });
+  assert.equal(second.page, 1);
+  assert.ok(
+    second.content.every((p) => !first.content.some((q) => q.id === p.id)),
+  );
+  const sorted = await getProducts({
+    categoryId: clothing.id,
+    size: 100,
+    sortBy: 'finalPrice',
+    sortDirection: 'DESC',
+  });
+  assert.deepEqual(
+    sorted.content.map((p) => p.finalPrice),
+    sorted.content.map((p) => p.finalPrice).toSorted((a, b) => b - a),
+  );
+  const found = await getProducts({ search: 'POLERA' });
+  assert.ok(found.totalElements > 0);
+  assert.ok(found.content.every((p) => /polera/i.test(p.name)));
+  await assert.rejects(
+    getProducts({ sortBy: 'color' }),
+    (error) => error instanceof ApiError && error.status === 400,
+  );
+});
+
+test('GET /categories pagina desde 0 y GET /categories/:id responde 404 si no existe', async () => {
+  const page = await getCategories({ page: 1, size: 3 });
+  assert.equal(page.totalElements, categories.length);
+  assert.equal(page.totalPages, Math.ceil(categories.length / 3));
+  assert.deepEqual(
+    page.content.map((c) => c.id),
+    apiCategories.slice(3, 6).map((c) => c.id),
+  );
+  const first = await getCategory(apiCategories[0].id);
+  assert.deepEqual(first, apiCategories[0]);
+  await assert.rejects(
+    getCategory(9999),
+    (error) => error instanceof ApiError && error.status === 404,
+  );
+  await assert.rejects(
+    getCategories({ size: 500 }),
+    (error) => error instanceof ApiError && error.status === 400,
+  );
+});
+
+test('POST /auth/login valida credenciales y entrega el JWT y el usuario', async () => {
+  const { access_token, user } = await login(
+    ' Maria@BuenOrigen.test ',
+    'CustomerTest2026!',
+  );
+  assert.ok(access_token);
+  assert.equal(user.firstName, 'María');
+  assert.equal(user.role, 'CUSTOMER');
+  assert.equal(user.password, undefined);
+  await assert.rejects(
+    login('maria@buenorigen.test', 'incorrecta1'),
+    (error) => error instanceof ApiError &&
+      error.status === 401 &&
+      /incorrectos/.test(error.message),
+  );
+  await assert.rejects(
+    login('no-es-un-correo', 'algo'),
+    (error) => error instanceof ApiError && error.status === 400,
+  );
 });
 
 test('Las fichas de todas las categorías conservan descripción, precio y enlace propio', () => {
@@ -285,37 +406,56 @@ const { productImages } = await server.ssrLoadModule(
   '/src/data/productImages.ts',
 );
 
-test('Todos los productos tienen una fotografía JPEG local y texto alternativo', async () => {
+test('Todos los productos tienen una fotografía local y texto alternativo', async () => {
   for (const product of products) {
     const image = productImages[product.name];
     assert.ok(image, product.name);
-    assert.match(image.src, /^\/img\/products\/\d+\.jpg$/);
+    assert.match(
+      image.src,
+      /^\/img\/(?:products\/\d+\.jpg|hito3\/[a-z-]+\.png)$/,
+    );
     assert.ok(image.alt.includes(product.name));
     const data = await readFile(
       new URL('../public' + image.src, import.meta.url),
     );
     assert.ok(data.length > 1000, product.name);
-    assert.equal(data[0], 0xff, product.name);
-    assert.equal(data[1], 0xd8, product.name);
+    const signature = image.src.endsWith('.png') ? '89504e470d0a1a0a' : 'ffd8';
+    assert.equal(
+      data.subarray(0, signature.length / 2).toString('hex'),
+      signature,
+      product.name,
+    );
   }
 });
 
-test('Catálogo y ficha muestran la misma fotografía de un producto', () => {
-  const product = products.find(
-    (product) => product.name === 'Granola Amanecer',
-  );
+test('La tarjeta del catálogo enlaza a la ficha con variantes y muestra la foto del producto', async () => {
+  const product = products.find((product) => product.name === 'Polera Aurora');
   const source = productImages[product.name].src;
-  const catalogue = render(
-    Catalog,
-    '/productos/alimentos',
-    '/productos/:category',
+  const { content } = await getProducts({ search: product.name });
+  const apiProduct = content.find((item) => item.name === product.name);
+  const card = render(CatalogProductCard, '/', '*', { product: apiProduct });
+  const href = card.match(/<a\s[^>]*href="([^"]+)"/)?.[1];
+  assert.equal(
+    href,
+    productUrl({ ...product, productId: apiProduct.id }).replace('&', '&amp;'),
   );
   const detail = render(
     Product,
     productUrl(product),
     '/productos/:category/producto',
   );
-  assert.ok(catalogue.includes(`src="${source}"`));
+  assert.match(detail, /TALLA/);
+  assert.match(detail, /COLOR/);
+  assert.match(detail, /<select/);
+  assert.match(detail, /Agregar a carrito/i);
+  const withoutAttributes = render(CatalogProductCard, '/', '*', {
+    product: { ...apiProduct, attributes: [] },
+  });
+  assert.doesNotMatch(
+    withoutAttributes,
+    /Atributos sustentables|Sin información/,
+  );
+  assert.ok(card.includes(`src="${source}"`));
   assert.ok(detail.includes(`src="${source}"`));
 });
 
@@ -437,6 +577,11 @@ test('La búsqueda ignora tildes y devuelve fichas de productos', () => {
   assert.match(html, /Resultados de búsqueda/);
   assert.match(html, /shop-card/);
   assert.doesNotMatch(html, /No encontramos tu producto/);
+  assert.ok(
+    html.indexOf('Resultados de búsqueda') <
+      html.indexOf('Reseñas de nuestros clientes'),
+  );
+  assert.match(html, /Reseñas de nuestros clientes/);
 });
 test('El carrito vacío presenta ilustración y acción para seguir comprando', () => {
   const html = render(Cart, '/carrito', '*', { openAuth: noop });
@@ -446,30 +591,29 @@ test('El carrito vacío presenta ilustración y acción para seguir comprando', 
 });
 
 const { Layout } = await server.ssrLoadModule('/src/components/Layout.tsx');
-test('Carrito y panel lateral muestran variantes sin edición y permiten eliminar productos', () => {
-  const previous = cart.cart;
-  cart.cart = [
+test('Carrito y panel lateral muestran variantes sin edición y permiten eliminar productos', ({ mock, }) => {
+  const cart = [
     { name: 'Polera Aurora', price: 13990, qty: 1, size: 's', color: 'negro' },
   ];
-  try {
-    for (const [Component, props] of [
-      [Cart, { openAuth: noop }],
-      [Layout, { layer: 'cart', setLayer: noop }],
-    ]) {
-      const html = render(Component, '/carrito', '*', props);
-      assert.ok(html.includes('<dt>Talla:</dt><dd>s</dd>'));
-      assert.ok(html.includes('<dt>Color:</dt><dd>negro</dd>'));
-      assert.match(html, /aria-label="Eliminar Polera Aurora"/);
-      assert.doesNotMatch(html, /<select/);
-      assert.doesNotMatch(html, />\s*Editar\s*</);
-      if (Component === Layout) {
-        assert.match(html, /recommendation-carousel/);
-        assert.ok(
-          html.indexOf('drawer-item') < html.indexOf('recommendation-carousel'),
-        );
-      }
+  mock.method(cartStore, 'getInitialState', () => ({
+    ...cartStore.getState(),
+    cart,
+  }));
+  for (const [Component, props] of [
+    [Cart, { openAuth: noop }],
+    [Layout, { layer: 'cart', setLayer: noop }],
+  ]) {
+    const html = render(Component, '/carrito', '*', props);
+    assert.ok(html.includes('<dt>Talla:</dt><dd>s</dd>'));
+    assert.ok(html.includes('<dt>Color:</dt><dd>negro</dd>'));
+    assert.match(html, /aria-label="Eliminar Polera Aurora"/);
+    assert.doesNotMatch(html, /<select/);
+    assert.doesNotMatch(html, />\s*Editar\s*</);
+    if (Component === Layout) {
+      assert.match(html, /recommendation-carousel/);
+      assert.ok(
+        html.indexOf('drawer-item') < html.indexOf('recommendation-carousel'),
+      );
     }
-  } finally {
-    cart.cart = previous;
   }
 });

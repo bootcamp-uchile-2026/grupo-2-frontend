@@ -1,94 +1,117 @@
-import { ProductCard } from '../components/ProductCard';
+import { CatalogProductCard } from '../components/CatalogProductCard';
 import { BannerImage } from '../components/BannerImage';
-import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { products } from '../data/products';
-import { categories } from '../data/categories';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
+import { Pagination } from '../components/Pagination';
+import { getAllProducts } from '../api/client';
+import type { ApiProduct, ProductQuery } from '../api/client';
+import { categories } from '../data/categories';
+import { CatalogFilters } from '../components/CatalogFilters';
+import { defaultFilters, matchesVariants } from '../data/catalogFilters';
+import type { Filters } from '../data/catalogFilters';
+import { localProductName, productAttributes } from '../data/products';
+
+const size = 20;
+
+// Campos de ordenamiento autorizados por GET /products.
+const sortParams: Record<
+  string,
+  Pick<ProductQuery, 'sortBy' | 'sortDirection'>
+> = {
+  asc: { sortBy: 'finalPrice', sortDirection: 'ASC' },
+  desc: { sortBy: 'finalPrice', sortDirection: 'DESC' },
+  featured: { sortBy: 'id', sortDirection: 'ASC' },
+  new: { sortBy: 'createdAt', sortDirection: 'DESC' },
+};
 
 export function Catalog() {
 
-  const { category = 'ropa-y-accesorios' } = useParams();
-  const selected = categories.find((c) => c.id === category);
-  const toolbar = useRef<HTMLDivElement>(null);
+  const { category = '' } = useParams();
+
+  // Reinicia los filtros al cambiar de categoría.
+  return <CatalogView key={category} category={category} />;
+}
+
+function CatalogView({ category }: { category: string }) {
+
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [result, setResult] = useState<ApiProduct[] | null>(null);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(0);
+  const [open, setOpen] = useState(true);
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...defaultFilters,
+    offers: params.get('ofertas') === '1',
+  }));
+  const [draft, setDraft] = useState<Filters>(filters);
+  const selected = categories.find((entry) => entry.id === category);
+  const categoryId = selected?.apiId;
+  const missing = Boolean(category) && categoryId === undefined;
+  const sort = filters.sort;
 
   useEffect(() => {
 
-    function closeMenus(event: PointerEvent | KeyboardEvent) {
+    if (missing) return;
 
-      if (event instanceof KeyboardEvent && event.key !== 'Escape') return;
+    const controller = new AbortController();
 
-      if (
-        event instanceof PointerEvent &&
-        toolbar.current?.contains(event.target as Node)
-      )
-        return;
+    getAllProducts({ categoryId, size, ...sortParams[sort] }, controller.signal)
+      .then((products) => {
 
-      toolbar.current
-        ?.querySelectorAll<HTMLDetailsElement>('.catalog-dropdown[open]')
-        .forEach((menu) => {
+        if (controller.signal.aborted) return;
 
-          menu.open = false;
+        setError('');
 
-          if (event instanceof KeyboardEvent)
-            menu.querySelector('summary')?.focus();
-        });
+        setResult(products);
+      })
+      .catch((cause) => {
+
+        if (!controller.signal.aborted) setError(cause.message);
+      });
+
+    return () => controller.abort();
+  }, [categoryId, missing, sort]);
+
+  function apply(next: Filters) {
+
+    if (next.sort !== sort) {
+      setResult(null);
+
+      setError('');
     }
 
-    document.addEventListener('pointerdown', closeMenus);
+    setFilters(next);
 
-    document.addEventListener('keydown', closeMenus);
+    setDraft(next);
 
-    return () => {
+    setPage(0);
+  }
 
-      document.removeEventListener('pointerdown', closeMenus);
+  function changePage(next: number) {
 
-      document.removeEventListener('keydown', closeMenus);
-    };
-  }, []);
+    setPage(next - 1);
 
-  const [sort, setSort] = useState('featured');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+  }
 
-  const departmentProducts = products.filter(
-    (product) => product.department === category,
-  );
-  const filterLabels: Record<string, string> = {
-    category: 'Tipo de producto',
-    gender: 'Género',
-    size: category === 'ropa-y-accesorios' ? 'Talla' : 'Presentación',
-    color: 'Color',
-    material: 'Material',
-  };
-  const fields =
-    category === 'ropa-y-accesorios'
-      ? ['category', 'gender', 'size', 'color', 'material']
-      : ['category', 'size', 'material'];
-  const options = Object.fromEntries(
-    fields.map((field) => [
-      field,
-      [
-        filterLabels[field],
-        ...new Set(
-          departmentProducts.flatMap((product) => String(product[field as keyof typeof product]).split(','),
-          ),
-        ),
-      ],
-    ]),
-  );
-  let visible = departmentProducts.filter((p) => Object.entries(filters).every(
-      ([key, value]) => value === 'all' ||
-        p[key as keyof typeof p].toString().split(',').includes(value),
-    ),
-  );
+  const filtered =
+    result?.filter(
+      (product) => (!filters.available || product.available) &&
+        (!filters.offers || product.finalPrice < product.price) &&
+        (filters.maxPrice === defaultFilters.maxPrice ||
+          product.finalPrice <= filters.maxPrice) &&
+        filters.attributes.every((attribute) => productAttributes(
+            localProductName(product.name),
+            product.attributes,
+          ).includes(attribute),
+        ) &&
+        matchesVariants(localProductName(product.name), filters),
+    ) ?? [];
+  const visible = filtered.slice(page * size, (page + 1) * size);
 
-  if (sort === 'asc') visible.sort((a, b) => a.price - b.price);
-
-  if (sort === 'desc') visible.sort((a, b) => b.price - a.price);
-
-  if (sort === 'new') visible = visible.toReversed();
-
-  if (!selected)
+  if (missing)
     return (
       <EmptyState
         title="Categoría no encontrada"
@@ -101,109 +124,98 @@ export function Catalog() {
   return (
     <main className="catalog-page">
       <div className="breadcrumbs">
-        <Link to="/">Home</Link> › {selected.name}
+        <Link to="/">Inicio</Link> › {selected?.name ?? 'Productos'}
       </div>
-      <div className="category-hero">
-        <BannerImage category={category} priority />
-        <h1 className="category-title">{selected.name}</h1>
-      </div>
-      <div className="catalog-toolbar" ref={toolbar}>
-        <details className="catalog-dropdown" name="catalog-tools">
-          <summary>
-            Filtrar <span className="dropdown-chevron" aria-hidden="true" />
-          </summary>
-          <div className="catalog-dropdown-panel filter-dropdown-panel">
-            {Object.entries(options).map(([key, values]) => (
-              <details className="filter-choice" key={key}>
-                <summary>
-                  {values[0]}
-                  {filters[key] && filters[key] !== 'all'
-                    ? ': ' + filters[key]
-                    : ''}{' '}
-                  <span className="dropdown-chevron" aria-hidden="true" />
-                </summary>
-                <div className="filter-choice-options">
-                  {['all', ...values.slice(1)].map((value) => (
-                    <label key={value}>
-                      <input
-                        type="radio"
-                        name={'filter-' + key}
-                        checked={(filters[key] || 'all') === value}
-                        onChange={() => setFilters({ ...filters, [key]: value })
-                        }
-                      />
-                      {value === 'all'
-                        ? 'Todos'
-                        : value === 'algodon'
-                          ? 'Algodón'
-                          : value.charAt(0).toUpperCase() + value.slice(1)}
-                    </label>
-                  ))}
-                </div>
-              </details>
-            ))}
-            <button className="clear-filters" onClick={() => setFilters({})}>
-              Limpiar filtros
-            </button>
-          </div>
-        </details>
-        <details
-          className="catalog-dropdown sort-dropdown"
-          name="catalog-tools"
+      {selected ? (
+        <div className="category-hero">
+          <BannerImage category={category} priority />
+          <h1 className="category-title">{selected.name}</h1>
+        </div>
+      ) : (
+        <h1 className="section-title">Todos los productos</h1>
+      )}
+      <div className="catalog-toolbar">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls="catalog-filters"
+          onClick={() => setOpen(!open)}
         >
-          <summary>
-            Ordenar por <span className="dropdown-chevron" aria-hidden="true" />
-          </summary>
-          <div className="catalog-dropdown-panel sort-dropdown-panel">
-            {[
-              ['asc', 'Precio menor a mayor'],
-              ['desc', 'Precio mayor a menor'],
-              ['featured', 'Productos destacados'],
-              ['new', 'Productos más recientes'],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                aria-pressed={sort === value}
-                onClick={(event) => {
-
-                  setSort(value);
-
-                  event.currentTarget
-                    .closest('details')
-                    ?.removeAttribute('open');
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </details>
+          Filtrar <span className="dropdown-chevron" aria-hidden="true" />
+        </button>
         <span className="product-count" role="status">
-          {visible.length} productos
+          {result
+            ? filtered.length + ' productos'
+            : !error && 'Cargando productos…'}
         </span>
       </div>
-      <div className="catalog-layout">
+      <div className="catalog-layout hito-filters-open">
         <div className="catalog-assortment">
-          <aside className="catalog-story">
-            <BannerImage category={category} />
-            <p>
-              Hecho con dedicación
-              <br />
-              <strong>Descubre el origen de cada producto</strong>
-            </p>
+          <aside className="catalog-sidebar">
+            <figure className="catalog-producer">
+              <div className="catalog-producer-photo">
+                <img
+                  src="/img/hito3/camila-rojas.png"
+                  alt="Retrato de Camila Rojas"
+                  width={1080}
+                  height={1080}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>
+                Hecho artesanalmente
+                <br />
+                Camila Rojas · Retrato de referencia
+              </figcaption>
+            </figure>
+            <div id="catalog-filters" hidden={!open}>
+              <CatalogFilters
+                category={category}
+                categories={categories}
+                draft={draft}
+                change={setDraft}
+                selectCategory={(slug) => navigate(slug ? '/productos/' + slug : '/productos')
+                }
+                apply={() => apply(draft)}
+                clear={() => {
+
+                  apply(defaultFilters);
+
+                  if (params.has('ofertas'))
+                    navigate(
+                      category ? '/productos/' + category : '/productos',
+                      {
+                        replace: true,
+                      },
+                    );
+                }}
+              />
+            </div>
           </aside>
           <section className="catalog-products" id="catalog">
             {visible.map((p) => (
-              <ProductCard key={p.name} product={p} />
+              <CatalogProductCard key={p.id} product={p} />
             ))}
-            {!visible.length && (
+            {error && (
+              <div className="catalog-empty" role="alert">
+                <h2>No pudimos cargar los productos</h2>
+                <p>{error}</p>
+              </div>
+            )}
+            {result && !visible.length && (
               <div className="catalog-empty">
                 <h2>No encontramos productos</h2>
-                <p>Prueba con otros filtros para encontrar lo que buscas.</p>
-                <button className="btn" onClick={() => setFilters({})}>
-                  Limpiar filtros
-                </button>
+                <p>Prueba con otros filtros.</p>
               </div>
+            )}
+            {result && (
+              <Pagination
+                page={page + 1}
+                pages={Math.ceil(filtered.length / size)}
+                onChange={changePage}
+                label="Páginas de productos"
+              />
             )}
           </section>
         </div>

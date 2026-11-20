@@ -1,68 +1,103 @@
 # Buen Origen
 
-Prototipo React, TypeScript y Vite con navegación mediante React Router. `old/` conserva el desarrollo original como referencia.
+Frontend de una tienda de productos sustentables de productores locales. El proyecto incluye un catálogo por categorías, fichas de producto, búsqueda, favoritos, carrito y un flujo de compra de demostración.
 
-## Ejecutar y verificar
+## Inicio rápido
+
+Necesitas **Node.js 22.12 o posterior** y **npm**.
 
 ```sh
-npm install
+git clone https://github.com/bootcamp-uchile-2026/grupo-2-frontend.git
+cd grupo-2-frontend
+npm ci
 npm run dev
-npm run build
-npm run lint
-npm test
-npm run format:check
 ```
 
-`npm run format` conserva cada import y cada firma de componente, función, método o clase en una sola línea, incluidos los parámetros y tipos de props. Separa con líneas en blanco los bloques de variables, efectos, métodos y retorno. Estas reglas permanentes están en `AGENTS.md`.
+Abre [http://localhost:5173](http://localhost:5173) o la dirección que indique Vite. El comando también inicia la API simulada en el puerto `3100`. No necesitas levantarla por separado ni instalar una base de datos.
 
-## Organización
+## Catálogo y API
 
-- `src/pages/`: inicio, catálogo, producto, carrito, checkout, acceso, recuperación y Mi cuenta.
-- `src/components/`: navegación, categorías, formularios, modales y componentes compartidos.
-- `src/store/`: carrito, cuentas de demostración y pedidos locales.
-- `src/data/`: catálogo simulado y categorías.
-- `src/index.css`: estilos originales y ajustes UX/UI.
-- `scripts/ux-ui.test.mjs`: pruebas de estados de error, validación y separación de pedidos por cuenta.
+El catálogo consulta `GET /products` en el backend compartido. Envía `categoryId` cuando eliges una categoría y usa la paginación y el orden del servidor. Las fichas abiertas desde el catálogo buscan el producto en ese mismo listado y seleccionan el registro por ID. El inicio y el buscador usan datos locales. [Swagger del backend](http://159.112.150.143:3004/api#/Products/ProductsController_findAll)
 
-## Rutas
+Las tarjetas del catálogo y las fichas abiertas desde él muestran fotos locales por producto. Cuando no hay una foto asignada, se elige una referencia de la misma categoría y se marca como ilustrativa. El registro de fotografías de referencia está en [scripts/product-photo-sources.json](scripts/product-photo-sources.json).
 
-- `/`
-- `/productos/:category`
-- `/productos/ropa-y-accesorios/producto?name=Polera%20Aurora`
-- `/carrito`
-- `/checkout`
-- `/acceso`
-- `/recuperar-cuenta`
-- `/mi-cuenta/compras`
-- `/mi-cuenta/compras/:orderId`
-- `/mi-cuenta/puntos-verdes`
-- `/mi-cuenta/datos-personales`
+| Variable                | Valor por defecto                                                 | Uso                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `VITE_PRODUCTS_API_URL` | `/api` en producción, `http://159.112.150.143:3004` en desarrollo | URL base de `GET /products`. Si se define `VITE_API_URL`, hereda ese valor salvo que se configure una URL específica para productos. |
+| `VITE_API_URL`          | `/api`                                                            | URL base del cliente de API. En desarrollo, Vite redirige `/api` a la API simulada.                                                  |
+| `API_PORT`              | `3100`                                                            | Puerto de la API simulada y destino del proxy de desarrollo.                                                                         |
 
-Las rutas anteriores de `moda-natural` y los enlaces HTML existentes redirigen a las rutas nuevas conservando parámetros y anclas. El hosting debe servir `index.html` al entrar directamente a una ruta React.
+Para usar el catálogo simulado cuando el backend compartido no esté disponible, crea un archivo `.env.local` con esta línea y reinicia Vite.
 
-## Ajustes UX/UI
+```dotenv
+VITE_PRODUCTS_API_URL=/api
+```
 
-Se implementaron los nombres de categorías y los cambios de las ocho capturas del documento: tarjetas de categorías en la portada, catálogo sin pestañas de subcategorías ni bloque de destacados, tarjetas con descripción y agregado rápido, carrito lateral con recomendaciones y una sola acción final, retorno al carrito desde checkout y confirmación de los datos antes del pago.
+## JSON Server para pruebas manuales
 
-El carrito permite guardar, restaurar, editar y eliminar productos. Un pago rechazado conserva los productos. Un pedido confirmado aparece en Mi cuenta con detalle, estado, seguimiento y ayuda. El flujo de compra funciona con un producto sin restringir las compras de varios productos.
+El repositorio incluye un conjunto de datos de ejemplo con productos y categorías en [server/db.json-server.json](server/db.json-server.json). Puedes levantarlo por separado para probar consultas HTTP. El frontend no consume este servidor.
 
-## Cuenta y servicios de demostración
+```sh
+npm run api:json-server
+```
 
-Cuenta de prueba:
+En otra terminal:
 
-- Correo: `samanta@buenorigen.cl`
-- Contraseña: `BuenOrigen2026`
+```sh
+curl 'http://127.0.0.1:3101/products?categoryId=4'
+```
 
-El registro local valida la contraseña (8 caracteres como mínimo, una letra y un número). Las contraseñas se guardan como hashes PBKDF2 con sal. La recuperación usa el código de prueba `123456`; no se envía un correo real. Los botones Google, Apple y Facebook abren una confirmación de acceso con una cuenta ficticia, sin OAuth externo.
+## Cuenta de demostración
 
-Los pagos, fechas de entrega, seguimiento, Puntos Verdes y solicitudes de ayuda son simulaciones. La regla local de puntos es 1 punto por cada $100 y 1 punto para canjear $1; no representa una política comercial definida. La iteración completa de Puntos Verdes queda fuera de esta entrega, según el documento. El cupón no aplica descuentos. Las ocho categorías tienen catálogo propio: 13 productos de ropa y accesorios y 6 productos por cada categoría restante (55 productos en total). Los precios, descripciones y presentaciones son datos ficticios para el prototipo. Los filtros, fichas, recomendaciones y opciones de compra se adaptan a la categoría.
+Puedes probar el acceso con `maria@buenorigen.test` y la contraseña `CustomerTest2026!`. Con la configuración de desarrollo, el inicio de sesión usa `POST /api/auth/login` de la API simulada. La recuperación usa el código de prueba `123456`.
 
-Los datos se almacenan en este dispositivo: `eco-cart`, `eco-saved`, `eco-accounts`, `eco-orders` y `eco-help` en localStorage; `eco-session` en sessionStorage. Este prototipo no implementa autenticación, recuperación ni pagos aptos para producción. Esas funciones requieren backend, verificación real de identidad y proveedores externos.
+El registro, los perfiles, el carrito, los pedidos y los Puntos Verdes de demostración se gestionan en el navegador. El cobro, el seguimiento de pedidos y el acceso con proveedores sociales se simulan.
 
-## Fotografías del catálogo
+## Tecnologías
 
-Los 55 productos usan fotografías reales e ilustrativas de Pexels, guardadas en `public/img/products/`. Las mismas fotos se reutilizan en tarjetas, fichas, recomendaciones, carrito y pedidos. No se depende de imágenes externas al navegar.
+| Tecnología                          | Uso en el proyecto                                         |
+| ----------------------------------- | ---------------------------------------------------------- |
+| React 19 y TypeScript               | Componentes, pantallas y tipos del frontend                |
+| Vite                                | Servidor de desarrollo, proxy local y compilación          |
+| React Router                        | Navegación entre catálogo, fichas, carrito y cuenta        |
+| Zustand                             | Estado del carrito y los favoritos                         |
+| Zod                                 | Validación de formularios de compra                        |
+| CSS y Fontsource                    | Estilos, diseño adaptable y tipografía Poppins             |
+| Fetch y Node.js                     | Cliente HTTP y servidor de la API simulada                 |
+| Node Test Runner, Oxlint y Prettier | Pruebas, lint y formateo mediante los scripts del proyecto |
 
-`scripts/product-photo-sources.json` registra la página original y la licencia de cada fotografía. `src/data/productImages.ts` relaciona las fotos con los productos. Para recuperar los archivos faltantes se puede ejecutar `node scripts/download-product-photos.mjs` y luego `npm run format`.
+## Comandos
 
-Las imágenes son referencias visuales del prototipo: no representan fotografías del inventario real ni implican respaldo de las personas o marcas que aparecen en ellas. Las condiciones de uso están en https://www.pexels.com/license/.
+| Comando                | Qué hace                                                      |
+| ---------------------- | ------------------------------------------------------------- |
+| `npm run dev`          | Inicia Vite y la API simulada                                 |
+| `npm run api`          | Inicia solo la API simulada                                   |
+| `npm run build`        | Comprueba TypeScript y genera la compilación en `dist/`       |
+| `npm run preview`      | Sirve localmente la última compilación de `dist/`             |
+| `npm test`             | Ejecuta pruebas de interfaz, reglas de negocio y API simulada |
+| `npm run lint`         | Ejecuta Oxlint                                                |
+| `npm run format`       | Aplica el formato del proyecto                                |
+| `npm run format:check` | Comprueba el formato                                          |
+
+Después de editar código, ejecuta `npm run format` y `npm run format:check`. Las reglas de formato están en [AGENTS.md](AGENTS.md).
+
+## Estructura
+
+| Ruta              | Contenido                                   |
+| ----------------- | ------------------------------------------- |
+| `src/pages/`      | Pantallas y flujos principales              |
+| `src/components/` | Componentes compartidos                     |
+| `src/api/`        | Cliente HTTP y tipos de la API              |
+| `src/data/`       | Categorías, catálogo local e imágenes       |
+| `src/store/`      | Carrito, favoritos, cuentas y pedidos       |
+| `server/`         | API simulada y datos de prueba              |
+| `public/img/`     | Imágenes locales                            |
+| `scripts/`        | Pruebas, formato y utilidades para imágenes |
+
+## Publicación
+
+Publica el contenido de `dist/`. En Netlify, `public/_redirects` configura el proxy de `/api` al backend compartido y sirve `index.html` para las rutas de React Router, como `/productos/aromas-y-bienestar`. Si configuras las variables `VITE_PRODUCTS_API_URL` o `VITE_API_URL` en Netlify, usa `/api` para pasar por el proxy. En otro hosting, configura un proxy equivalente o proporciona una URL HTTPS para la API antes de compilar.
+
+## Licencia
+
+Código bajo [licencia MIT](LICENSE).

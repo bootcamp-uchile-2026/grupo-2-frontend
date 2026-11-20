@@ -1,9 +1,11 @@
+import { GreenFootprint } from '../components/GreenFootprint';
+import { hitoAsset } from '../data/hito3';
 import { CartOptions } from '../components/CartOptions';
 import { ProductImage } from '../components/ProductImage';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { money, productLabels } from '../data/products';
-import { readItems, useCart } from '../store/cart';
+import { money, productLabels, products } from '../data/products';
+import { readItems, selectCartTotal, useCart } from '../store/cart';
 import { useAccount } from '../store/account';
 import { Steps } from '../components/Steps';
 import { EmptyIllustration } from '../components/EmptyIllustration';
@@ -11,7 +13,11 @@ import type { CartItem } from '../store/cart';
 
 export function Cart({ openAuth }: { openAuth: () => void }) {
 
-  const { cart, setCart, total, notify, add } = useCart();
+  const cart = useCart((state) => state.cart);
+  const setCart = useCart((state) => state.setCart);
+  const total = useCart(selectCartTotal);
+  const notify = useCart((state) => state.notify);
+  const add = useCart((state) => state.add);
   const { user } = useAccount();
   const [saved, setSaved] = useState(() => readItems('eco-saved'));
   const [error, setError] = useState('');
@@ -30,7 +36,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
 
     updateSaved([...saved, item]);
 
-    setCart(cart.filter((_, i) => i !== index));
+    setCart((current) => current.filter((_, i) => i !== index));
 
     notify(`${item.name} se guardó para después`);
   }
@@ -81,23 +87,39 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
             <div id="cart-lines">
               {cart.map((p, i) => (
                 <article className="cart-line" key={`${p.name}-${i}`}>
-                  <ProductImage name={p.name} />
+                  <ProductImage
+                    name={p.name}
+                    source={
+                      p.name === 'Polerón Montana'
+                        ? hitoAsset('montana-cart.png')
+                        : undefined
+                    }
+                  />
                   <div className="cart-line-info">
                     <h3>{p.name}</h3>
-                    <p>Producto sustentable de producción local.</p>
+                    <p>
+                      {
+                        products.find(({ name }) => name === p.name)
+                          ?.description
+                      }
+                    </p>
                     <CartOptions index={i} />
                     <p>{money(p.price)}</p>
                     <div className="cart-item-actions">
-                      <button className="btn" onClick={() => save(i)}>
-                        Guardar para después
+                      <button
+                        type="button"
+                        className="favorite-toggle"
+                        aria-label="Guardar para después"
+                        onClick={() => save(i)}
+                      >
+                        <img src={hitoAsset('heart.svg')} alt="" />
                       </button>
                     </div>
                   </div>
                   <div className="quantity">
                     <button
                       aria-label={`Disminuir cantidad de ${p.name}`}
-                      onClick={() => setCart(
-                          cart.map((x, index) => index === i
+                      onClick={() => setCart((current) => current.map((x, index) => index === i
                               ? { ...x, qty: Math.max(1, x.qty - 1) }
                               : x,
                           ),
@@ -109,8 +131,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     <span>{p.qty}</span>
                     <button
                       aria-label={`Aumentar cantidad de ${p.name}`}
-                      onClick={() => setCart(
-                          cart.map((x, index) => index === i ? { ...x, qty: x.qty + 1 } : x,
+                      onClick={() => setCart((current) => current.map((x, index) => index === i ? { ...x, qty: x.qty + 1 } : x,
                           ),
                         )
                       }
@@ -126,12 +147,13 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                     aria-label={`Eliminar ${p.name}`}
                     onClick={() => {
 
-                      setCart(cart.filter((_, index) => index !== i));
+                      setCart((current) => current.filter((_, index) => index !== i),
+                      );
 
                       notify(`${p.name} se eliminó del carrito`);
                     }}
                   >
-                    Eliminar
+                    <img src={hitoAsset('trash.svg')} alt="" />
                   </button>
                 </article>
               ))}
@@ -140,29 +162,13 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
               Subtotal: <strong>{money(total)}</strong>
             </div>
             <div className="cart-bottom">
-              <div>
-                <h2>Huella verde de tu compra</h2>
-                <div
-                  className="cart-footprint"
-                  aria-label={
-                    'Ganarás ' + Math.floor(total / 100) + ' Puntos Verdes'
-                  }
-                >
-                  <strong>{Math.floor(total / 100)} pts</strong>
-                  <span>
-                    <img src="/img/figma/home-leaf.svg" alt="" /> Puntos Verdes
-                  </span>
-                </div>
-              </div>
+              <GreenFootprint items={cart} />
               <div className="cart-buttons">
-                <Link className="btn" to="/productos/ropa-y-accesorios">
+                <Link className="btn outline" to="/productos">
                   Seguir comprando
                 </Link>
-                <button
-                  className="btn secondary checkout-trigger"
-                  onClick={pay}
-                >
-                  Pagar
+                <button className="btn checkout-trigger" onClick={pay}>
+                  Ir a pagar
                 </button>
               </div>
             </div>
@@ -209,7 +215,7 @@ export function Cart({ openAuth }: { openAuth: () => void }) {
                       }
                       aria-label={`Eliminar ${item.name} de guardados`}
                     >
-                      Eliminar
+                      <img src={hitoAsset('trash.svg')} alt="" />
                     </button>
                   </div>
                 </article>

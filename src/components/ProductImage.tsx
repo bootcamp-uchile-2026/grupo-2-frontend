@@ -1,23 +1,32 @@
 import { useState } from 'react';
-import { productImages } from '../data/productImages';
+import { findProductImage } from '../data/productImages';
 
-export function ProductImage({ name, className = '', priority = false, }: { name: string; className?: string; priority?: boolean; }) {
+export function ProductImage({ name, className = '', priority = false, source, category, productId, }: { name: string; className?: string; priority?: boolean; source?: string; category?: string; productId?: number; }) {
 
-  const [failed, setFailed] = useState(false);
-  const image = productImages[name];
+  const [failedSource, setFailedSource] = useState<string>();
+  const image = source
+    ? { src: source, alt: name }
+    : findProductImage(name, category, productId);
+  const illustrative = image && 'reference' in image;
+  const src = image?.src;
 
   return (
     <div className={`placeholder product-photo ${className}`.trim()}>
-      {image && !failed ? (
-        <img
-          src={image.src}
-          alt={image.alt}
-          width={960}
-          height={960}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
-          onError={() => setFailed(true)}
-        />
+      {src && failedSource !== src ? (
+        <>
+          <img
+            src={src}
+            alt={image?.alt}
+            width={960}
+            height={960}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            onError={() => setFailedSource(src)}
+          />
+          {illustrative && (
+            <span className="product-photo-reference">Foto ilustrativa</span>
+          )}
+        </>
       ) : (
         <span className="product-photo-fallback">Imagen no disponible</span>
       )}

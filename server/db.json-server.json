@@ -1,0 +1,69 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "name": "Alimentos",
+      "description": "Productos alimenticios artesanales y sustentables."
+    },
+    {
+      "id": "4",
+      "name": "Limpieza del hogar",
+      "description": "Productos y accesorios para la limpieza del hogar."
+    },
+    {
+      "id": "6",
+      "name": "Ropa y accesorios",
+      "description": "Prendas de vestir y accesorios sustentables."
+    }
+  ],
+  "products": [
+    {
+      "id": "14",
+      "name": "Granola Amanecer",
+      "categoryId": 1,
+      "finalPrice": 5990,
+      "stock": 20,
+      "available": true
+    },
+    {
+      "id": "15",
+      "name": "Miel Valle Dorado",
+      "categoryId": 1,
+      "finalPrice": 7990,
+      "stock": 20,
+      "available": true
+    },
+    {
+      "id": "32",
+      "name": "Limpiador Multiuso Cítrico",
+      "categoryId": 4,
+      "finalPrice": 4990,
+      "stock": 20,
+      "available": true
+    },
+    {
+      "id": "33",
+      "name": "Detergente Lavanda",
+      "categoryId": 4,
+      "finalPrice": 7990,
+      "stock": 20,
+      "available": true
+    },
+    {
+      "id": "1",
+      "name": "Polera Aurora",
+      "categoryId": 6,
+      "finalPrice": 13990,
+      "stock": 20,
+      "available": true
+    },
+    {
+      "id": "2",
+      "name": "Polera Ágata",
+      "categoryId": 6,
+      "finalPrice": 18990,
+      "stock": 20,
+      "available": true
+    }
+  ]
+}

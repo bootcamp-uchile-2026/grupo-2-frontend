@@ -3,7 +3,7 @@ import { useCart } from '../store/cart';
 
 export function CartOptions({ index }: { index: number }) {
 
-  const { cart } = useCart();
+  const cart = useCart((state) => state.cart);
   const item = cart[index];
   const labels = productLabels(item);
 

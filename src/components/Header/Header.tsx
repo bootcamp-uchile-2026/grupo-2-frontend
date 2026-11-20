@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { categories } from '../../data/categories';
-import { useCart } from '../../store/cart';
+import { selectCartCount, useCart } from '../../store/cart';
 
 export function Header({ openCart }: { openCart: () => void }) {
 
-  const { count } = useCart();
+  const count = useCart(selectCartCount);
   const [announcementOpen, setAnnouncementOpen] = useState(true);
   const [categoryMenu, setCategoryMenu] = useState(false);
   const location = useLocation();
@@ -14,9 +14,7 @@ export function Header({ openCart }: { openCart: () => void }) {
     <div className="site-navigation">
       {announcementOpen && (
         <div className="announcement-bar">
-          <p>
-            Regístrate con nosotros, ¡regalamos puntos verdes al iniciar sesión!
-          </p>
+          <p>¡Regístrate en nuestra web y obtén puntos verdes de bienvenida!</p>
           <button
             aria-label="Cerrar anuncio"
             onClick={() => setAnnouncementOpen(false)}
@@ -29,7 +27,7 @@ export function Header({ openCart }: { openCart: () => void }) {
         <Link className="logo" to="/" aria-label="Buen Origen, inicio">
           <img
             className="figma-brand"
-            src="/img/figma/login-imgLogoCompletoBuenOrigen2.png"
+            src="/img/hito3/logo-white.png"
             alt="Buen Origen"
           />
         </Link>
@@ -86,14 +84,13 @@ export function Header({ openCart }: { openCart: () => void }) {
               <img src="/img/figma/header-imgIconixtoLinearSearch.svg" alt="" />
             </button>
           </form>
-          <button
-            type="button"
+          <Link
             className="icon-button"
-            aria-label="Productos guardados"
-            disabled
+            to="/favoritos"
+            aria-label="Productos favoritos"
           >
             <img src="/img/figma/header-imgIconixtoLinearHeart2.svg" alt="" />
-          </button>
+          </Link>
           <button
             type="button"
             className="icon-button cart-trigger"

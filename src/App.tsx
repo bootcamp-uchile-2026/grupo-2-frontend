@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { CartProvider } from './store/CartContext';
 import { AccountProvider } from './store/AccountProvider';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
@@ -22,6 +21,8 @@ import '@fontsource/poppins/latin-600.css';
 import '@fontsource/poppins/latin-700.css';
 import './figma-refinements.css';
 import './ux-alignment.css';
+import './hito3.css';
+import { Favorites } from './pages/Favorites';
 
 function LegacyRedirect({ to }: { to: string }) {
 
@@ -50,69 +51,69 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <CartProvider>
-        <AccountProvider>
-          <Routes>
-            <Route element={<Layout layer={layer} setLayer={setLayer} />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/buscar" element={<Search />} />
-              <Route path="/productos/:category" element={<CatalogRoute />} />
+      <AccountProvider>
+        <Routes>
+          <Route element={<Layout layer={layer} setLayer={setLayer} />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/buscar" element={<Search />} />
+            <Route path="/favoritos" element={<Favorites />} />
+            <Route path="/productos" element={<CatalogRoute />} />
+            <Route path="/productos/:category" element={<CatalogRoute />} />
+            <Route
+              path="/productos/:category/producto"
+              element={<ProductRoute />}
+            />
+            <Route
+              path="/carrito"
+              element={<Cart openAuth={() => setLayer('auth')} />}
+            />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/acceso" element={<Login />} />
+            <Route path="/recuperar-cuenta" element={<Recovery />} />
+            <Route
+              path="/mi-cuenta"
+              element={<Navigate to="/mi-cuenta/compras" replace />}
+            />
+            <Route path="/mi-cuenta/:section" element={<Account />} />
+            <Route path="/mi-cuenta/compras/:orderId" element={<Account />} />
+            {[
+              ['/index.html', '/'],
+              ['/productos/moda-natural', '/productos/ropa-y-accesorios'],
+              [
+                '/productos/moda-natural/producto',
+                '/productos/ropa-y-accesorios/producto',
+              ],
+              [
+                '/productos/moda-natural/index.html',
+                '/productos/ropa-y-accesorios',
+              ],
+              [
+                '/productos/moda-natural/producto/index.html',
+                '/productos/ropa-y-accesorios/producto',
+              ],
+              ['/carrito/index.html', '/carrito'],
+              ['/checkout/index.html', '/checkout'],
+            ].map(([from, to]) => (
               <Route
-                path="/productos/:category/producto"
-                element={<ProductRoute />}
+                key={from}
+                path={from}
+                element={<LegacyRedirect to={to} />}
               />
-              <Route
-                path="/carrito"
-                element={<Cart openAuth={() => setLayer('auth')} />}
-              />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/acceso" element={<Login />} />
-              <Route path="/recuperar-cuenta" element={<Recovery />} />
-              <Route
-                path="/mi-cuenta"
-                element={<Navigate to="/mi-cuenta/compras" replace />}
-              />
-              <Route path="/mi-cuenta/:section" element={<Account />} />
-              <Route path="/mi-cuenta/compras/:orderId" element={<Account />} />
-              {[
-                ['/index.html', '/'],
-                ['/productos/moda-natural', '/productos/ropa-y-accesorios'],
-                [
-                  '/productos/moda-natural/producto',
-                  '/productos/ropa-y-accesorios/producto',
-                ],
-                [
-                  '/productos/moda-natural/index.html',
-                  '/productos/ropa-y-accesorios',
-                ],
-                [
-                  '/productos/moda-natural/producto/index.html',
-                  '/productos/ropa-y-accesorios/producto',
-                ],
-                ['/carrito/index.html', '/carrito'],
-                ['/checkout/index.html', '/checkout'],
-              ].map(([from, to]) => (
-                <Route
-                  key={from}
-                  path={from}
-                  element={<LegacyRedirect to={to} />}
+            ))}
+            <Route
+              path="*"
+              element={
+                <EmptyState
+                  title="Página no encontrada"
+                  description="La página que buscas no está disponible."
+                  to="/"
+                  action="Volver al inicio"
                 />
-              ))}
-              <Route
-                path="*"
-                element={
-                  <EmptyState
-                    title="Página no encontrada"
-                    description="La página que buscas no está disponible."
-                    to="/"
-                    action="Volver al inicio"
-                  />
-                }
-              />
-            </Route>
-          </Routes>
-        </AccountProvider>
-      </CartProvider>
+              }
+            />
+          </Route>
+        </Routes>
+      </AccountProvider>
     </BrowserRouter>
   );
 }
